@@ -1,0 +1,627 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>RumorGuard - AI Fact Checker</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet"/>
+  
+  <style>
+    :root {
+      --bg: #f5f4f0;
+      --surface: #ffffff;
+      --border: rgba(0,0,0,0.10);
+      --text: #1a1a1a;
+      --text-muted: #6b6b6b;
+      --accent: #d94f2b;
+      --accent-light: #fdf0ec;
+      --accent-hover: #bf3d1e;
+      --green: #1D9E75;
+      --green-light: #E1F5EE;
+      --yellow: #BA7517;
+      --yellow-light: #FAEEDA;
+      --red: #A32D2D;
+      --red-light: #FCEBEB;
+    }
+
+    [data-theme="dark"] {
+      --bg: #111110;
+      --surface: #1c1c1a;
+      --border: rgba(255,255,255,0.09);
+      --text: #f0ede8;
+      --text-muted: #888884;
+      --accent: #e8623e;
+      --accent-light: #2a1810;
+      --accent-hover: #f0734f;
+      --green: #5DCAA5;
+      --green-light: #04342C;
+      --yellow: #EF9F27;
+      --yellow-light: #412402;
+      --red: #F09595;
+      --red-light: #501313;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      transition: background 0.3s, color 0.3s;
+    }
+
+    /* Navbar */
+    nav {
+      position: sticky; top: 0; z-index: 100;
+      height: 64px;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      display: flex; 
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 2rem;
+    }
+
+    .logo {
+      display: flex; align-items: center; gap: 10px;
+      text-decoration: none;
+      color: var(--text);
+    }
+    .logo-icon {
+      width: 34px; height: 34px;
+      background: var(--accent);
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .logo-text {
+      font-family: 'Syne', sans-serif;
+      font-weight: 800;
+      font-size: 1.25rem;
+      letter-spacing: -0.02em;
+    }
+    .logo-text span { color: var(--accent); }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      list-style: none;
+    }
+    .nav-links a {
+      text-decoration: none;
+      color: var(--text-muted);
+      font-weight: 500;
+      padding: 8px 16px;
+      border-radius: 10px;
+      transition: all 0.2s;
+    }
+    .nav-links a:hover,
+    .nav-links a.active {
+      background: var(--accent-light);
+      color: var(--accent);
+    }
+
+    /* Hero Section */
+    .hero {
+      min-height: calc(100vh - 64px);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 4rem 1.5rem 6rem;
+      text-align: center;
+      position: relative;
+    }
+
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.8rem;
+      font-weight: 500;
+      color: var(--accent);
+      background: var(--accent-light);
+      border: 1px solid rgba(217,79,43,0.2);
+      padding: 6px 16px;
+      border-radius: 9999px;
+      margin-bottom: 1.5rem;
+    }
+
+    .hero h1 {
+      font-family: 'Syne', sans-serif;
+      font-weight: 800;
+      font-size: clamp(2.5rem, 7vw, 4.2rem);
+      line-height: 1.05;
+      letter-spacing: -0.04em;
+      max-width: 720px;
+      margin-bottom: 1.25rem;
+    }
+    .hero h1 .highlight { color: var(--accent); }
+    .hero h1 .strike {
+      position: relative;
+      color: var(--text-muted);
+    }
+    .hero h1 .strike::after {
+      content: '';
+      position: absolute;
+      left: 0; right: 0;
+      top: 50%;
+      height: 4px;
+      background: var(--accent);
+      transform: rotate(-2deg);
+    }
+
+    .hero-sub {
+      font-size: 1.05rem;
+      color: var(--text-muted);
+      max-width: 500px;
+      margin-bottom: 2.5rem;
+    }
+
+    /* Search Box */
+    .search-box {
+      width: 100%;
+      max-width: 680px;
+      background: var(--surface);
+      border: 1.5px solid var(--border);
+      border-radius: 20px;
+      padding: 1.5rem;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.08);
+      transition: all 0.3s;
+    }
+    .search-box:focus-within {
+      border-color: var(--accent);
+      box-shadow: 0 10px 50px rgba(217,79,43,0.15);
+    }
+
+    .search-label {
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 0.8rem;
+    }
+
+    .search-textarea {
+      width: 100%;
+      min-height: 110px;
+      resize: none;
+      border: none;
+      outline: none;
+      background: transparent;
+      font-size: 1.05rem;
+      line-height: 1.6;
+    }
+
+    .search-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 1rem;
+      padding-top: 1rem;
+      border-top: 1px solid var(--border);
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .chips {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .chip {
+      font-size: 0.8rem;
+      padding: 5px 12px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 9999px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .chip:hover {
+      background: var(--accent-light);
+      color: var(--accent);
+      border-color: var(--accent);
+    }
+
+    .btn-check {
+      background: var(--accent);
+      color: white;
+      border: none;
+      padding: 12px 28px;
+      border-radius: 12px;
+      font-weight: 500;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s;
+    }
+    .btn-check:hover { background: var(--accent-hover); transform: translateY(-1px); }
+    .btn-check:disabled { opacity: 0.6; cursor: not-allowed; }
+
+    .spinner {
+      width: 18px;
+      height: 18px;
+      border: 2px solid rgba(255,255,255,0.3);
+      border-top-color: white;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      display: none;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* Result Card */
+    .result-card {
+      max-width: 680px;
+      margin: 2rem auto;
+      background: var(--surface);
+      border: 1.5px solid var(--border);
+      border-radius: 20px;
+      overflow: hidden;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.08);
+    }
+
+    .top-strip {
+      height: 6px;
+      width: 100%;
+    }
+
+    .card-body {
+      padding: 2rem;
+    }
+
+    .score-row {
+      display: flex;
+      gap: 2rem;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .gauge-wrap {
+      position: relative;
+      width: 120px;
+      height: 120px;
+      flex-shrink: 0;
+    }
+    .gauge-wrap svg {
+      width: 120px;
+      height: 120px;
+      transform: rotate(-90deg);
+    }
+    .gauge-bg { fill: none; stroke: var(--border); stroke-width: 10; }
+    .gauge-fill {
+      fill: none;
+      stroke-width: 10;
+      stroke-linecap: round;
+      stroke-dasharray: 300;
+      stroke-dashoffset: 300;
+      transition: stroke-dashoffset 1.2s ease;
+    }
+
+    .gauge-label {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+    .gauge-number {
+      font-family: 'Syne', sans-serif;
+      font-size: 2.2rem;
+      font-weight: 800;
+      line-height: 1;
+    }
+
+    .verdict-block {
+      flex: 1;
+      min-width: 200px;
+    }
+
+    .verdict-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 16px;
+      border-radius: 9999px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      margin-bottom: 0.8rem;
+    }
+
+    .verdict-title {
+      font-family: 'Syne', sans-serif;
+      font-size: 1.5rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+    }
+
+    .reason-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin: 1.5rem 0;
+    }
+    .reason-tag {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      padding: 8px 14px;
+      border-radius: 10px;
+      font-size: 0.85rem;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .conf-bar-bg {
+      height: 8px;
+      background: var(--bg);
+      border-radius: 9999px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+    }
+    .conf-bar-fill {
+      height: 100%;
+      transition: width 1.2s ease;
+    }
+
+    /* Theme Colors */
+    .theme-false .top-strip, .theme-false .gauge-fill, .theme-false .verdict-badge { background: var(--red); color: white; }
+    .theme-false .gauge-number, .theme-false .verdict-title { color: var(--red); }
+
+    .theme-true .top-strip, .theme-true .gauge-fill, .theme-true .verdict-badge { background: var(--green); color: white; }
+    .theme-true .gauge-number, .theme-true .verdict-title { color: var(--green); }
+
+    .theme-uncertain .top-strip, .theme-uncertain .gauge-fill, .theme-uncertain .verdict-badge { background: var(--yellow); color: white; }
+    .theme-uncertain .gauge-number, .theme-uncertain .verdict-title { color: var(--yellow); }
+
+    .card-footer {
+      padding: 1.25rem 2rem;
+      background: var(--bg);
+      border-top: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .action-btn {
+      padding: 8px 18px;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .action-btn:hover {
+      background: var(--accent-light);
+      color: var(--accent);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ==================== NAVBAR ==================== -->
+  <nav>
+    <a href="#" class="logo">
+      <div class="logo-icon">
+        <svg viewBox="0 0 24 24" fill="white"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>
+      </div>
+      <span class="logo-text">Rumor<span>Guard</span></span>
+    </a>
+
+    <ul class="nav-links">
+      <li><a href="#" class="active">Check Claim</a></li>
+      <li><a href="#">How It Works</a></li>
+      <li><a href="#">Recent Checks</a></li>
+      <li><a href="#">About Us</a></li>   <!-- ← Added Here -->
+    </ul>
+
+    <div>
+      <button id="themeToggle" style="background:none; border:none; cursor:pointer; font-size:1.4rem; padding:8px;">🌓</button>
+    </div>
+  </nav>
+
+  <!-- ==================== HERO + INPUT ==================== -->
+  <section class="hero">
+    <div class="hero-badge">🔍 AI-powered • Real-time Fact Checking</div>
+    
+    <h1>
+      Kill the <span class="strike">rumor</span><br/>
+      before it kills <span class="highlight">trust.</span>
+    </h1>
+    
+    <p class="hero-sub">
+      Paste any claim, headline, or message.<br>
+      Our AI will analyze it and tell you if it's true or fake.
+    </p>
+
+    <div class="search-box">
+      <span class="search-label">Enter the rumor or claim</span>
+      <textarea id="claim-input" class="search-textarea" maxlength="600" 
+        placeholder='e.g. "Drinking coffee every day permanently cures cancer..."'></textarea>
+
+      <div class="search-footer">
+        <div class="chips">
+          <span class="chip" onclick="fillExample(this)">5G causes disease</span>
+          <span class="chip" onclick="fillExample(this)">Vaccines contain microchips</span>
+          <span class="chip" onclick="fillExample(this)">Coffee cures cancer</span>
+        </div>
+
+        <button class="btn-check" id="checkBtn" onclick="checkClaim()">
+          <span class="spinner" id="spinner"></span>
+          <span id="btnText">Check Claim</span>
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Result Area -->
+  <div class="result-card" id="resultCard" style="display: none;">
+    <!-- ... (Result card content remains same as previous version) ... -->
+    <div class="top-strip" id="topStrip"></div>
+    
+    <div class="card-body">
+      <div class="score-row">
+        <div class="gauge-wrap">
+          <svg viewBox="0 0 100 100">
+            <circle class="gauge-bg" cx="50" cy="50" r="45"/>
+            <circle class="gauge-fill" id="gaugeFill" cx="50" cy="50" r="45"/>
+          </svg>
+          <div class="gauge-label">
+            <span class="gauge-number" id="gaugeNumber">82</span>
+            <span style="font-size:0.75rem; color:var(--text-muted);">RISK SCORE</span>
+          </div>
+        </div>
+
+        <div class="verdict-block">
+          <div class="verdict-badge" id="verdictBadge">
+            <span class="dot"></span>
+            <span id="verdictLabel">LIKELY FALSE</span>
+          </div>
+          <div class="verdict-title" id="verdictTitle">This claim appears false</div>
+          <p id="verdictDesc" style="color:var(--text-muted);">
+            Our AI model detected high levels of emotional language and sensationalism.
+          </p>
+        </div>
+      </div>
+
+      <div style="margin: 2rem 0;">
+        <strong style="font-size:0.9rem; color:var(--text-muted);">SIGNALS DETECTED</strong>
+        <div class="reason-tags" id="reasonTags"></div>
+      </div>
+
+      <div>
+        <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
+          <span style="font-size:0.9rem;">Model Confidence</span>
+          <strong id="confValue">88%</strong>
+        </div>
+        <div class="conf-bar-bg">
+          <div class="conf-bar-fill" id="confBar" style="background:var(--red); width:0%"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card-footer">
+      <span style="color:var(--text-muted); font-size:0.9rem;">
+        ✓ Checked just now • RumorGuard AI
+      </span>
+      <div>
+        <button class="action-btn" onclick="shareResult()">Share</button>
+        <button class="action-btn" onclick="checkAnother()">Check Another</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Dark Mode
+    const toggle = document.getElementById('themeToggle');
+    toggle.addEventListener('click', () => {
+      const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+      document.documentElement.setAttribute('data-theme', isDark ? 'light' : 'dark');
+      localStorage.setItem('theme', isDark ? 'light' : 'dark');
+    });
+
+    if (localStorage.getItem('theme') === 'dark') {
+      document.documentElement.setAttribute('data-theme', 'dark');
+    }
+
+    function fillExample(el) {
+      document.getElementById('claim-input').value = el.textContent;
+    }
+
+    async function checkClaim() {
+      const input = document.getElementById('claim-input');
+      const claim = input.value.trim();
+      
+      if (!claim) {
+        input.style.border = "2px solid var(--accent)";
+        setTimeout(() => input.style.border = "", 1500);
+        return;
+      }
+
+      const btn = document.getElementById('checkBtn');
+      const spinner = document.getElementById('spinner');
+      const btnText = document.getElementById('btnText');
+
+      btn.disabled = true;
+      spinner.style.display = 'inline-block';
+      btnText.textContent = 'Analyzing...';
+
+      try {
+        await new Promise(resolve => setTimeout(resolve, 1600));
+
+        const mockResponses = [
+          { score: 82, label: "Likely False", confidence: 88, 
+            desc: "High emotional language and sensationalism detected. No credible sources support this claim." },
+          { score: 18, label: "Likely True", confidence: 91, 
+            desc: "Multiple credible sources confirm this information." },
+          { score: 55, label: "Uncertain", confidence: 64, 
+            desc: "Mixed signals detected. More context is needed." }
+        ];
+
+        const result = mockResponses[Math.floor(Math.random() * mockResponses.length)];
+        showResult(result);
+        
+      } catch (e) {
+        alert("Something went wrong. Please try again.");
+      } finally {
+        btn.disabled = false;
+        spinner.style.display = 'none';
+        btnText.textContent = 'Check Claim';
+      }
+    }
+
+    function showResult(data) {
+      const card = document.getElementById('resultCard');
+      card.style.display = 'block';
+      card.scrollIntoView({ behavior: 'smooth' });
+
+      card.className = 'result-card';
+      if (data.label.includes("False")) card.classList.add('theme-false');
+      else if (data.label.includes("True")) card.classList.add('theme-true');
+      else card.classList.add('theme-uncertain');
+
+      const gaugeFill = document.getElementById('gaugeFill');
+      const offset = 300 - (data.score / 100) * 300;
+      gaugeFill.style.strokeDashoffset = offset;
+
+      document.getElementById('gaugeNumber').textContent = data.score;
+      document.getElementById('verdictLabel').textContent = data.label.toUpperCase();
+      document.getElementById('verdictTitle').textContent = 
+        data.label.includes("False") ? "This claim appears false" :
+        data.label.includes("True") ? "This claim appears credible" : "Verdict is uncertain";
+      
+      document.getElementById('verdictDesc').textContent = data.desc;
+      document.getElementById('confValue').textContent = data.confidence + "%";
+      document.getElementById('confBar').style.width = data.confidence + "%";
+
+      const reasonsHTML = `
+        <div class="reason-tag">⚠️ Emotional language detected</div>
+        <div class="reason-tag">📉 No credible sources</div>
+        <div class="reason-tag">🔥 Sensationalist headline</div>
+      `;
+      document.getElementById('reasonTags').innerHTML = reasonsHTML;
+    }
+
+    function shareResult() {
+      alert("Link copied to clipboard! (Demo)");
+    }
+
+    function checkAnother() {
+      document.getElementById('resultCard').style.display = 'none';
+      document.getElementById('claim-input').focus();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    document.getElementById('claim-input').addEventListener('keydown', (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') checkClaim();
+    });
+  </script>
+</body>
+</html>
