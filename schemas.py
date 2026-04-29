@@ -10,6 +10,7 @@ class Login(BaseModel):
 
 class AnalyzeInput(BaseModel):
     text: str
+    url: str = ""
 
 class SaveInput(BaseModel):
     username: str
