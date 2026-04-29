@@ -1,4 +1,3 @@
-from pydantic import BaseModel
 from fastapi import FastAPI, Depends, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
@@ -7,6 +6,8 @@ from database import SessionLocal, engine
 import models, schemas
 import re
 import os
+from typing import List
+from passlib.context import CryptContext
 
 from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
 
@@ -15,7 +16,16 @@ models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI(title="RumorGuard API", version="1.0.0")
 
-# ── 2. CORS — allow frontend (file:// or localhost) to reach this API ─────────
+# ── 2. PASSWORD HASHING ──────────────────────────────────────────────────────
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
+def hash_password(password: str) -> str:
+    return pwd_context.hash(password)
+
+def verify_password(plain_password: str, hashed_password: str) -> bool:
+    return pwd_context.verify(plain_password, hashed_password)
+
+# ── 3. CORS — allow frontend (file:// or localhost) to reach this API ─────────
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -24,17 +34,12 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# ── 3. SERVE index.html at "/" ────────────────────────────────────────────────
+# ── 4. SERVE index.html at "/" ────────────────────────────────────────────────
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 @app.get("/", response_class=FileResponse)
 def serve_frontend():
     return FileResponse(os.path.join(BASE_DIR, "index.html"))
-
-# ── 4. REQUEST MODEL (matches what index.html sends) ─────────────────────────
-class InputData(BaseModel):
-    text: str = ""
-    url: str = ""
 
 # ── 5. DB SESSION DEPENDENCY ──────────────────────────────────────────────────
 def get_db():
@@ -139,7 +144,7 @@ def ai_analyze(text: str) -> dict:
 
 # ── 7. ANALYZE ENDPOINT ───────────────────────────────────────────────────────
 @app.post("/analyze")
-def analyze(data: InputData, db: Session = Depends(get_db)):
+def analyze(data: schemas.AnalyzeInput, db: Session = Depends(get_db)):
     text = (data.text or "").strip()
     if not text:
         raise HTTPException(status_code=422, detail="No text provided.")
@@ -174,7 +179,8 @@ def analyze(data: InputData, db: Session = Depends(get_db)):
 def register(user: schemas.UserCreate, db: Session = Depends(get_db)):
     if db.query(models.User).filter(models.User.username == user.username).first():
         raise HTTPException(status_code=400, detail="Username already exists.")
-    db.add(models.User(username=user.username, password=user.password))
+    hashed_password = hash_password(user.password)
+    db.add(models.User(username=user.username, password=hashed_password))
     db.commit()
     return {"message": "User registered successfully."}
 
@@ -183,7 +189,7 @@ def register(user: schemas.UserCreate, db: Session = Depends(get_db)):
 @app.post("/login")
 def login(user: schemas.Login, db: Session = Depends(get_db)):
     db_user = db.query(models.User).filter(models.User.username == user.username).first()
-    if not db_user or db_user.password != user.password:
+    if not db_user or not verify_password(user.password, db_user.password):
         raise HTTPException(status_code=401, detail="Invalid username or password.")
     return {"username": user.username, "status": "success"}
 
@@ -203,7 +209,7 @@ def save(data: schemas.SaveInput, db: Session = Depends(get_db)):
 
 # ── 11. GET HISTORY ───────────────────────────────────────────────────────────
 @app.get("/history/{username}")
-def get_history(username: str, db: Session = Depends(get_db)):
+def get_history(username: str, db: Session = Depends(get_db)) -> List[dict]:
     return db.query(models.History).filter(models.History.username == username).all()
 
 
