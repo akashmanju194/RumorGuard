@@ -1,31 +1,34 @@
-from fastapi import FastAPI, Depends, HTTPException
+"""
+RumorGuard API - Production-grade backend using FastAPI, SQLAlchemy, and Pydantic.
+Handles misinformation analysis, user authentication, and analysis history.
+"""
+from fastapi import FastAPI, Depends, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from sqlalchemy.orm import Session
-from database import SessionLocal, engine
-import models, schemas
-import re
-import os
 from typing import List
-from passlib.context import CryptContext
+import os
 
-from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
+# Import database and models
+from database import SessionLocal, engine, get_async_db
+from sqlalchemy.ext.asyncio import AsyncSession
+import models
+import schemas
+
+# Import services
+from services import AnalysisService, AuthService, HistoryService
 
 # ── 1. INITIALIZE DATABASE ────────────────────────────────────────────────────
 models.Base.metadata.create_all(bind=engine)
 
-app = FastAPI(title="RumorGuard API", version="1.0.0")
+# ── 2. INITIALIZE APP ─────────────────────────────────────────────────────────
+app = FastAPI(
+    title="RumorGuard API",
+    version="2.0.0",
+    description="AI-powered fact-checking and misinformation detection",
+)
 
-# ── 2. PASSWORD HASHING ──────────────────────────────────────────────────────
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-
-def hash_password(password: str) -> str:
-    return pwd_context.hash(password)
-
-def verify_password(plain_password: str, hashed_password: str) -> bool:
-    return pwd_context.verify(plain_password, hashed_password)
-
-# ── 3. CORS — allow frontend (file:// or localhost) to reach this API ─────────
+# ── 3. MIDDLEWARE ─────────────────────────────────────────────────────────────
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -34,186 +37,277 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# ── 4. SERVE index.html at "/" ────────────────────────────────────────────────
+# ── 4. INITIALIZE SERVICES ────────────────────────────────────────────────────
+analysis_service = AnalysisService()
+auth_service = AuthService()
+history_service = HistoryService()
+
+# ── 5. STATIC FILES & FRONTEND ────────────────────────────────────────────────
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 @app.get("/", response_class=FileResponse)
 def serve_frontend():
+    """Serve index.html frontend"""
     return FileResponse(os.path.join(BASE_DIR, "index.html"))
 
-# ── 5. DB SESSION DEPENDENCY ──────────────────────────────────────────────────
+# ── 6. DB SESSION DEPENDENCY ──────────────────────────────────────────────────
 def get_db():
+    """Dependency for database sessions"""
     db = SessionLocal()
     try:
         yield db
     finally:
         db.close()
 
-# ── 6. ANALYSIS ENGINE (VADER + rule-based, no heavy ML deps) ─────────────────
-analyzer = SentimentIntensityAnalyzer()
-
-RUMOUR_PATTERNS = [
-    r"\bgovernment (is )?hiding\b",
-    r"\bthey don'?t want you to know\b",
-    r"\bwake up (sheeple|people)\b",
-    r"\bconspiracy\b",
-    r"\bcure(s)? (cancer|covid|diabetes|aids|all)\b",
-    r"\b5g (causes?|spreads?|gives?|kills?)\b",
-    r"\bmicrochip\b",
-    r"\bdeep state\b",
-    r"\bplandemic\b",
-    r"\bnew world order\b",
-    r"\bflat earth\b",
-    r"\bvaccines? (causes?|gave|gives?|cause)\b",
-    r"\bchip(ped)? in (the )?vaccine\b",
-    r"\bsecret (agenda|plan|plot)\b",
-    r"\bmind control\b",
-    r"\bsheeple\b",
-]
-
-CREDIBLE_PHRASES = [
-    r"\baccording to (scientists?|researchers?|doctors?|studies?|who|cdc|nih|nasa)\b",
-    r"\bpeer[- ]reviewed\b",
-    r"\bpublished in\b",
-    r"\bclinical trial\b",
-    r"\bstatistically significant\b",
-    r"\bscientific consensus\b",
-    r"\bdata shows?\b",
-    r"\bresearch (shows?|suggests?|found)\b",
-]
-
-def ai_analyze(text: str) -> dict:
-    """
-    Lightweight rumour-detection engine using VADER + pattern rules.
-    Returns { score (0-100, higher = more credible), verdict, reason, confidence }
-    """
-    text_lower = text.lower()
-    scores = analyzer.polarity_scores(text)
-
-    rumour_hits  = sum(1 for p in RUMOUR_PATTERNS  if re.search(p, text_lower))
-    credible_hits = sum(1 for p in CREDIBLE_PHRASES if re.search(p, text_lower))
-
-    caps_ratio      = sum(1 for c in text if c.isupper()) / max(len(text), 1)
-    exclamation_cnt = text.count("!")
-    all_caps_words  = sum(1 for w in text.split() if w.isupper() and len(w) > 2)
-
-    # Start neutral
-    truth_score = 50.0
-    truth_score += credible_hits * 12
-    truth_score -= rumour_hits  * 15
-    if scores["compound"] < -0.5:
-        truth_score -= 10
-    elif scores["compound"] > 0.3:
-        truth_score += 5
-    if caps_ratio > 0.3:    truth_score -= 10
-    if exclamation_cnt >= 2: truth_score -= 8
-    if all_caps_words >= 3:  truth_score -= 8
-
-    truth_score = max(0.0, min(100.0, truth_score))
-
-    # Verdict
-    if truth_score >= 65:
-        verdict = "True"
-        reason  = "The claim uses credible, measured language with no obvious misinformation signals."
-    elif truth_score >= 40:
-        verdict = "Uncertain"
-        reason  = "The claim has mixed signals — some credible markers but also emotional or unverified language."
-    else:
-        parts = []
-        if rumour_hits    > 0:  parts.append("known conspiracy phrases")
-        if scores["compound"] < -0.5: parts.append("highly fear-inducing sentiment")
-        if caps_ratio > 0.3 or exclamation_cnt >= 2: parts.append("excessive capitalisation or exclamation marks")
-        parts.append("no credible sourcing")
-        verdict = "Likely False"
-        reason  = "The claim shows misinformation signals: " + ", ".join(parts) + "."
-
-    total_signals = (rumour_hits + credible_hits
-                     + (1 if caps_ratio > 0.3 else 0)
-                     + (1 if exclamation_cnt >= 2 else 0))
-    confidence = min(95, 50 + total_signals * 8)
-    if truth_score > 85 or truth_score < 15:
-        confidence = min(95, confidence + 10)
-
+# ── 7. HEALTH CHECK ───────────────────────────────────────────────────────────
+@app.get("/health", response_model=dict)
+def health():
+    """Health check endpoint"""
     return {
-        "score":      round(truth_score),
-        "verdict":    verdict,
-        "reason":     reason,
-        "confidence": confidence,
+        "status": "ok",
+        "message": "RumorGuard API is running.",
+        "version": "2.0.0",
     }
 
+# ── 8. USER REGISTRATION ──────────────────────────────────────────────────────
+@app.post(
+    "/register",
+    response_model=dict,
+    status_code=status.HTTP_201_CREATED,
+    summary="Register a new user",
+)
+def register(user: schemas.UserCreate, db: Session = Depends(get_db)):
+    """
+    Register a new user account.
+    
+    - **username**: Unique alphanumeric username (3-50 chars)
+    - **password**: Account password (minimum 6 chars)
+    """
+    # Check if user exists
+    existing_user = db.query(models.User).filter(
+        models.User.username == user.username
+    ).first()
+    
+    if existing_user:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Username already exists.",
+        )
 
-# ── 7. ANALYZE ENDPOINT ───────────────────────────────────────────────────────
-@app.post("/analyze")
-def analyze(data: schemas.AnalyzeInput, db: Session = Depends(get_db)):
+    # Hash password and create user
+    hashed_password = auth_service.hash_password(user.password)
+    new_user = models.User(
+        username=user.username,
+        password=hashed_password,
+    )
+    
+    db.add(new_user)
+    db.commit()
+    db.refresh(new_user)
+
+    return {
+        "message": "User registered successfully.",
+        "username": new_user.username,
+    }
+
+# ── 9. LOGIN ──────────────────────────────────────────────────────────────────
+@app.post(
+    "/login",
+    response_model=schemas.LoginResponse,
+    summary="Authenticate user",
+)
+def login(credentials: schemas.Login, db: Session = Depends(get_db)):
+    """
+    Authenticate user and return login status.
+    
+    - **username**: User's registered username
+    - **password**: User's password
+    """
+    # Find user by username
+    db_user = db.query(models.User).filter(
+        models.User.username == credentials.username
+    ).first()
+
+    # Verify credentials
+    if not db_user or not auth_service.verify_password(
+        credentials.password, db_user.password
+    ):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid username or password.",
+        )
+
+    return schemas.LoginResponse(
+        username=db_user.username,
+        status="success",
+    )
+
+# ── 10. ANALYZE TEXT ──────────────────────────────────────────────────────────
+@app.post(
+    "/analyze",
+    response_model=schemas.AnalyzeResponse,
+    summary="Analyze text for misinformation",
+)
+def analyze(
+    data: schemas.AnalyzeInput,
+    db: Session = Depends(get_db),
+):
+    """
+    Analyze text using VADER sentiment + pattern matching.
+    
+    Returns analysis result and saves to guest history.
+    
+    - **text**: Text to analyze (1-5000 chars)
+    - **url**: Optional source URL
+    """
     text = (data.text or "").strip()
     if not text:
-        raise HTTPException(status_code=422, detail="No text provided.")
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="No text provided.",
+        )
 
-    result = ai_analyze(text)
+    # Run analysis using service
+    result = analysis_service.analyze(text)
 
-    # Save to history automatically as GuestUser
-    db.add(models.History(
-        username="GuestUser",
-        text=text[:250],
-        score=result["score"],
-        label=result["verdict"],
-    ))
-    db.commit()
+    # Save to history as GuestUser
+    try:
+        history_data = schemas.SaveInput(
+            username="GuestUser",
+            text=text[:500],
+            score=float(result["score"]),
+            label=result["verdict"],
+            source_url=data.url or None,
+            confidence=result["confidence"],
+        )
+        history_service.save_analysis(db, history_data)
+    except Exception as e:
+        # Log error but don't fail the response
+        print(f"History save error: {e}")
 
-    # Build the string the frontend parses line-by-line
+    # Build analysis string
     ai_analysis_str = (
         f"Verdict: {result['verdict']}\n"
         f"Reason: {result['reason']}\n"
-        f"Confidence: {result['confidence']}"
+        f"Confidence: {result['confidence']}%"
     )
 
+    return schemas.AnalyzeResponse(
+        score=result["score"],
+        ai_analysis=ai_analysis_str,
+        error=None,
+    )
+
+# ── 11. SAVE ANALYSIS TO HISTORY ──────────────────────────────────────────────
+@app.post(
+    "/save",
+    response_model=schemas.HistoryResponse,
+    status_code=status.HTTP_201_CREATED,
+    summary="Save analysis result",
+)
+def save_history(
+    data: schemas.SaveInput,
+    db: Session = Depends(get_db),
+):
+    """
+    Save an analysis result to user's history.
+    
+    - **username**: User's username
+    - **text**: Original analyzed text
+    - **score**: Truth score (0-100)
+    - **label**: Verdict (True/False/Uncertain)
+    - **source_url**: Optional source URL
+    - **confidence**: Confidence level (0-100)
+    """
+    try:
+        record = history_service.save_analysis(db, data)
+        return schemas.HistoryResponse(
+            message="Saved successfully.",
+            id=record.id,
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to save history: {str(e)}",
+        )
+
+# ── 12. GET USER HISTORY ──────────────────────────────────────────────────────
+@app.get(
+    "/history/{username}",
+    response_model=schemas.HistoryListResponse,
+    summary="Get user's analysis history",
+)
+async def get_history(
+    username: str,
+    limit: int = 50,
+    db: AsyncSession = Depends(get_async_db),
+):
+    """
+    Retrieve user's past analysis results asynchronously.
+    
+    - **username**: Username to fetch history for
+    - **limit**: Maximum items to return (default: 50)
+    """
+    result = await history_service.get_user_history_async(db, username, limit=limit)
+    if not result:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User not found.",
+        )
+    return result
+
+# ── 13. GET USER STATISTICS ───────────────────────────────────────────────────
+@app.get(
+    "/stats/{username}",
+    response_model=dict,
+    summary="Get user's analysis statistics",
+)
+def get_stats(username: str, db: Session = Depends(get_db)):
+    """
+    Get aggregate statistics for a user's analyses.
+    
+    Returns total analyses, average score, and verdict breakdown.
+    """
+    stats = history_service.get_user_stats(db, username)
     return {
-        "score":       result["score"],
-        "ai_analysis": ai_analysis_str,
-        "error":       None,
+        "username": username,
+        **stats,
     }
 
+# ── 14. DELETE HISTORY ITEM ───────────────────────────────────────────────────
+@app.delete(
+    "/history/{username}/{item_id}",
+    response_model=dict,
+    summary="Delete a history item",
+)
+def delete_history_item(
+    username: str,
+    item_id: int,
+    db: Session = Depends(get_db),
+):
+    """
+    Delete a specific analysis from user's history.
+    
+    - **username**: User's username (for authorization)
+    - **item_id**: History item ID to delete
+    """
+    if history_service.delete_history_item(db, item_id, username):
+        return {"message": "History item deleted successfully."}
+    else:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="History item not found or unauthorized.",
+        )
 
-# ── 8. USER REGISTRATION ──────────────────────────────────────────────────────
-@app.post("/register")
-def register(user: schemas.UserCreate, db: Session = Depends(get_db)):
-    if db.query(models.User).filter(models.User.username == user.username).first():
-        raise HTTPException(status_code=400, detail="Username already exists.")
-    hashed_password = hash_password(user.password)
-    db.add(models.User(username=user.username, password=hashed_password))
-    db.commit()
-    return {"message": "User registered successfully."}
+# ── 15. ERROR HANDLERS ────────────────────────────────────────────────────────
+@app.exception_handler(HTTPException)
+async def http_exception_handler(request, exc):
+    """Custom HTTP exception handler"""
+    return {
+        "error": exc.detail,
+        "status_code": exc.status_code,
+    }
 
-
-# ── 9. LOGIN ──────────────────────────────────────────────────────────────────
-@app.post("/login")
-def login(user: schemas.Login, db: Session = Depends(get_db)):
-    db_user = db.query(models.User).filter(models.User.username == user.username).first()
-    if not db_user or not verify_password(user.password, db_user.password):
-        raise HTTPException(status_code=401, detail="Invalid username or password.")
-    return {"username": user.username, "status": "success"}
-
-
-# ── 10. SAVE HISTORY ──────────────────────────────────────────────────────────
-@app.post("/save")
-def save(data: schemas.SaveInput, db: Session = Depends(get_db)):
-    db.add(models.History(
-        username=data.username,
-        text=data.text,
-        score=data.score,
-        label=data.label,
-    ))
-    db.commit()
-    return {"message": "Saved successfully."}
-
-
-# ── 11. GET HISTORY ───────────────────────────────────────────────────────────
-@app.get("/history/{username}")
-def get_history(username: str, db: Session = Depends(get_db)) -> List[dict]:
-    return db.query(models.History).filter(models.History.username == username).all()
-
-
-# ── 12. HEALTH CHECK ──────────────────────────────────────────────────────────
-@app.get("/health")
-def health():
-    return {"status": "ok", "message": "RumorGuard API is running."}
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=8000)

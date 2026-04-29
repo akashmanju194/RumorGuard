@@ -5,43 +5,44 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>RumorGuard - AI Fact Checker</title>
-  <link
-    href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@400;500;600&display=swap"
-    rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400;1,700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
 
   <style>
-    :root {
-      --bg: #f5f4f0;
-      --surface: #ffffff;
-      --border: rgba(0, 0, 0, 0.10);
-      --text: #1a1a1a;
-      --text-muted: #6b6b6b;
-      --accent: #d94f2b;
-      --accent-light: #fdf0ec;
-      --accent-hover: #bf3d1e;
-      --green: #1D9E75;
-      --green-light: #E1F5EE;
-      --yellow: #BA7517;
-      --yellow-light: #FAEEDA;
-      --red: #A32D2D;
-      --red-light: #FCEBEB;
+        :root {
+      --bg: #F0F0F0;
+      --surface: #FFFFFF;
+      --border: #111111;
+      --text: #111111;
+      --text-muted: #555555;
+      --accent: #FF3E00;
+      --accent-light: #FFECE5;
+      --accent-hover: #CC3200;
+      --green: #00C853;
+      --green-light: #E8F5E9;
+      --yellow: #FFD600;
+      --yellow-light: #FFFDE7;
+      --red: #FF1744;
+      --red-light: #FFEBEE;
+      --shadow: 4px 4px 0px var(--border);
+      --radius: 0px;
     }
 
     [data-theme="dark"] {
-      --bg: #111110;
-      --surface: #1c1c1a;
-      --border: rgba(255, 255, 255, 0.09);
-      --text: #f0ede8;
-      --text-muted: #888884;
-      --accent: #e8623e;
-      --accent-light: #2a1810;
-      --accent-hover: #f0734f;
-      --green: #5DCAA5;
-      --green-light: #04342C;
-      --yellow: #EF9F27;
-      --yellow-light: #412402;
-      --red: #F09595;
-      --red-light: #501313;
+      --bg: #0A0A0A;
+      --surface: #141414;
+      --border: #444444;
+      --text: #EFEFEF;
+      --text-muted: #888888;
+      --accent: #00FF41;
+      --accent-light: #002208;
+      --accent-hover: #00CC34;
+      --green: #00FF41;
+      --green-light: #002208;
+      --yellow: #FFEA00;
+      --yellow-light: #332E00;
+      --red: #FF1744;
+      --red-light: #33040E;
+      --shadow: 4px 4px 0px var(--border);
     }
 
     * {
@@ -51,7 +52,7 @@
     }
 
     body {
-      font-family: 'DM Sans', sans-serif;
+      font-family: 'Space Grotesk', sans-serif;
       background: var(--bg);
       color: var(--text);
       line-height: 1.6;
@@ -84,14 +85,14 @@
       width: 34px;
       height: 34px;
       background: var(--accent);
-      border-radius: 8px;
+      border-radius: var(--radius);
       display: flex;
       align-items: center;
       justify-content: center;
     }
 
     .logo-text {
-      font-family: 'Syne', sans-serif;
+      font-family: 'Space Mono', monospace; text-transform: uppercase;
       font-weight: 800;
       font-size: 1.25rem;
       letter-spacing: -0.02em;
@@ -113,7 +114,7 @@
       color: var(--text-muted);
       font-weight: 500;
       padding: 8px 16px;
-      border-radius: 10px;
+      border-radius: var(--radius);
       transition: all 0.2s;
     }
 
@@ -150,7 +151,7 @@
     }
 
     .hero h1 {
-      font-family: 'Syne', sans-serif;
+      font-family: 'Space Mono', monospace; text-transform: uppercase;
       font-weight: 800;
       font-size: clamp(2.5rem, 7vw, 4.2rem);
       line-height: 1.05;
@@ -192,9 +193,9 @@
       max-width: 680px;
       background: var(--surface);
       border: 1.5px solid var(--border);
-      border-radius: 20px;
+      border-radius: var(--radius);
       padding: 1.5rem;
-      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
+      box-shadow: var(--shadow);
       transition: all 0.3s;
     }
 
@@ -261,7 +262,7 @@
       color: white;
       border: none;
       padding: 12px 28px;
-      border-radius: 12px;
+      border-radius: var(--radius);
       font-weight: 500;
       cursor: pointer;
       display: flex;
@@ -302,9 +303,9 @@
       margin: 2rem auto;
       background: var(--surface);
       border: 1.5px solid var(--border);
-      border-radius: 20px;
+      border-radius: var(--radius);
       overflow: hidden;
-      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
+      box-shadow: var(--shadow);
     }
 
     .top-strip {
@@ -361,7 +362,7 @@
     }
 
     .gauge-number {
-      font-family: 'Syne', sans-serif;
+      font-family: 'Space Mono', monospace; text-transform: uppercase;
       font-size: 2.2rem;
       font-weight: 800;
       line-height: 1;
@@ -385,7 +386,7 @@
     }
 
     .verdict-title {
-      font-family: 'Syne', sans-serif;
+      font-family: 'Space Mono', monospace; text-transform: uppercase;
       font-size: 1.5rem;
       font-weight: 700;
       margin-bottom: 0.5rem;
@@ -402,7 +403,7 @@
       background: var(--bg);
       border: 1px solid var(--border);
       padding: 8px 14px;
-      border-radius: 10px;
+      border-radius: var(--radius);
       font-size: 0.85rem;
       display: flex;
       align-items: center;
@@ -474,7 +475,7 @@
       padding: 8px 18px;
       border: 1px solid var(--border);
       background: var(--surface);
-      border-radius: 10px;
+      border-radius: var(--radius);
       cursor: pointer;
       transition: all 0.2s;
     }
@@ -483,6 +484,591 @@
       background: var(--accent-light);
       color: var(--accent);
     }
+
+    /* Info Sections */
+    .info-section {
+      padding: 4rem 1.5rem;
+      background: var(--surface);
+      border-top: 1px solid var(--border);
+    }
+
+    .section-container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .info-section h2 {
+      font-family: 'Space Mono', monospace; text-transform: uppercase;
+      font-weight: 800;
+      font-size: 2.5rem;
+      margin-bottom: 3rem;
+      text-align: center;
+      color: var(--text);
+    }
+
+    .steps-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 2rem;
+      margin-bottom: 4rem;
+    }
+
+    .step-card {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 2rem;
+      text-align: center;
+      transition: all 0.3s;
+    }
+
+    .step-card:hover {
+      border-color: var(--accent);
+      box-shadow: 0 8px 24px rgba(217, 79, 43, 0.1);
+      transform: translateY(-4px);
+    }
+
+    .step-number {
+      width: 50px;
+      height: 50px;
+      background: var(--accent);
+      color: white;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      font-weight: 700;
+      margin: 0 auto 1rem;
+    }
+
+    .step-card h3 {
+      margin: 1rem 0 0.5rem;
+      color: var(--text);
+    }
+
+    .step-card p {
+      color: var(--text-muted);
+      font-size: 0.95rem;
+      line-height: 1.5;
+    }
+
+    .features-list {
+      background: var(--bg);
+      border-radius: var(--radius);
+      padding: 2rem;
+      border: 1px solid var(--border);
+    }
+
+    .features-list h3 {
+      margin-bottom: 1.5rem;
+      color: var(--text);
+    }
+
+    .features-list ul {
+      list-style: none;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+    }
+
+    .features-list li {
+      color: var(--text-muted);
+      font-size: 1rem;
+    }
+
+    /* About Section */
+    .about-content {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 4rem;
+      align-items: center;
+    }
+
+    .about-text h3 {
+      font-size: 1.3rem;
+      margin: 1.5rem 0 0.75rem;
+      color: var(--text);
+    }
+
+    .about-text h3:first-child {
+      margin-top: 0;
+    }
+
+    .about-text p {
+      color: var(--text-muted);
+      line-height: 1.7;
+      margin-bottom: 1rem;
+    }
+
+    .about-stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.5rem;
+    }
+
+    .stat-box {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 2rem;
+      text-align: center;
+      transition: all 0.3s;
+    }
+
+    .stat-box:hover {
+      border-color: var(--accent);
+      background: var(--accent-light);
+    }
+
+    .stat-number {
+      font-size: 2rem;
+      font-weight: 700;
+      color: var(--accent);
+      margin-bottom: 0.5rem;
+    }
+
+    .stat-label {
+      color: var(--text-muted);
+      font-size: 0.9rem;
+    }
+
+    /* Modal */
+    .modal {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 1001;
+      width: 90%;
+      max-width: 600px;
+      background: var(--surface);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      animation: slideIn 0.3s ease-out;
+    }
+
+    @keyframes slideIn {
+      from {
+        opacity: 0;
+        transform: translate(-50%, -48%);
+      }
+      to {
+        opacity: 1;
+        transform: translate(-50%, -50%);
+      }
+    }
+
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 1000;
+      animation: fadeIn 0.2s ease-out;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+      }
+      to {
+        opacity: 1;
+      }
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1.5rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .modal-header h2 {
+      margin: 0;
+      font-size: 1.5rem;
+    }
+
+    .modal-close {
+      background: none;
+      border: none;
+      font-size: 1.5rem;
+      cursor: pointer;
+      color: var(--text-muted);
+      transition: color 0.2s;
+    }
+
+    .modal-close:hover {
+      color: var(--text);
+    }
+
+    .modal-body {
+      padding: 1.5rem;
+      max-height: 400px;
+      overflow-y: auto;
+    }
+
+    .recent-check-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1rem;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      margin-bottom: 1rem;
+      transition: all 0.2s;
+    }
+
+    .recent-check-item:hover {
+      background: var(--bg);
+      border-color: var(--accent);
+    }
+
+    .check-text {
+      flex: 1;
+      margin-right: 1rem;
+    }
+
+    .check-text-main {
+      color: var(--text);
+      font-weight: 500;
+      margin-bottom: 0.25rem;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .check-text-meta {
+      color: var(--text-muted);
+      font-size: 0.85rem;
+    }
+
+    .check-badge {
+      padding: 0.5rem 1rem;
+      border-radius: var(--radius);
+      font-weight: 600;
+      font-size: 0.8rem;
+      white-space: nowrap;
+    }
+
+    .check-badge.true {
+      background: var(--green-light);
+      color: var(--green);
+    }
+
+    .check-badge.false {
+      background: var(--red-light);
+      color: var(--red);
+    }
+
+    .check-badge.uncertain {
+      background: var(--yellow-light);
+      color: var(--yellow);
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 2rem;
+      color: var(--text-muted);
+    }
+
+    .empty-state p {
+      margin-bottom: 1rem;
+    }
+
+    /* How It Works Modal */
+    .how-it-works-modal {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 1001;
+      width: 90%;
+      max-width: 700px;
+      background: var(--surface);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      animation: slideIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+      overflow: hidden;
+    }
+
+    .modal-header-enhanced {
+      background: linear-gradient(135deg, var(--accent) 0%, rgba(217, 79, 43, 0.8) 100%);
+      color: white;
+      padding: 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .modal-header-enhanced h2 {
+      margin: 0;
+      font-family: 'Space Mono', monospace; text-transform: uppercase;
+      font-weight: 800;
+      font-size: 1.8rem;
+    }
+
+    .modal-body-enhanced {
+      padding: 2rem;
+      max-height: 500px;
+      overflow-y: auto;
+    }
+
+    .process-step {
+      display: flex;
+      gap: 1.5rem;
+      margin-bottom: 2rem;
+      opacity: 0;
+      animation: fadeInUp 0.5s ease-out forwards;
+    }
+
+    .process-step:nth-child(1) { animation-delay: 0.1s; }
+    .process-step:nth-child(2) { animation-delay: 0.2s; }
+    .process-step:nth-child(3) { animation-delay: 0.3s; }
+    .process-step:nth-child(4) { animation-delay: 0.4s; }
+
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .step-icon {
+      width: 50px;
+      height: 50px;
+      background: var(--accent-light);
+      border: 2px solid var(--accent);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      flex-shrink: 0;
+    }
+
+    .step-content h3 {
+      margin: 0 0 0.5rem 0;
+      color: var(--text);
+      font-size: 1.1rem;
+      font-weight: 600;
+    }
+
+    .step-content p {
+      margin: 0;
+      color: var(--text-muted);
+      font-size: 0.95rem;
+      line-height: 1.5;
+    }
+
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1rem;
+      margin-top: 1.5rem;
+      padding-top: 1.5rem;
+      border-top: 1px solid var(--border);
+    }
+
+    .mini-stat {
+      text-align: center;
+    }
+
+    .mini-stat-number {
+      font-size: 1.5rem;
+      font-weight: 800;
+      color: var(--accent);
+      display: block;
+    }
+
+    .mini-stat-label {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    /* Recent Checks Enhanced */
+    .recent-checks-list {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .check-item-enhanced {
+      display: grid;
+      grid-template-columns: 1fr auto auto;
+      gap: 1rem;
+      align-items: center;
+      padding: 1rem;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    .check-item-enhanced:hover {
+      border-color: var(--accent);
+      transform: translateX(4px);
+      box-shadow: 0 4px 12px rgba(217, 79, 43, 0.1);
+    }
+
+    .check-info {
+      min-width: 0;
+    }
+
+    .check-claim {
+      color: var(--text);
+      font-weight: 500;
+      font-size: 0.95rem;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .check-meta {
+      color: var(--text-muted);
+      font-size: 0.8rem;
+      margin-top: 0.3rem;
+    }
+
+    .check-score {
+      text-align: center;
+      min-width: 70px;
+    }
+
+    .check-score-number {
+      font-size: 1.3rem;
+      font-weight: 800;
+      color: var(--accent);
+      display: block;
+    }
+
+    .check-score-label {
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+    }
+
+    .verdict-badge-enhanced {
+      padding: 0.6rem 1.2rem;
+      border-radius: var(--radius);
+      font-weight: 600;
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      white-space: nowrap;
+      letter-spacing: 0.05em;
+    }
+
+    .verdict-badge-enhanced.true {
+      background: var(--green-light);
+      color: var(--green);
+    }
+
+    .verdict-badge-enhanced.false {
+      background: var(--red-light);
+      color: var(--red);
+    }
+
+    .verdict-badge-enhanced.uncertain {
+      background: var(--yellow-light);
+      color: var(--yellow);
+    }
+
+    .modal-footer {
+      padding: 1.5rem 2rem;
+      background: var(--bg);
+      border-top: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .modal-footer-stats {
+      display: flex;
+      gap: 2rem;
+    }
+
+    .footer-stat {
+      text-align: center;
+    }
+
+    .footer-stat-number {
+      font-size: 1.4rem;
+      font-weight: 800;
+      color: var(--accent);
+    }
+
+    .footer-stat-label {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-top: 0.2rem;
+    }
+
+    /* Loading Animation */
+    .loading-spinner {
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      border: 3px solid rgba(217, 79, 43, 0.3);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* Fade-in animation for sections */
+    .fade-in {
+      animation: fadeIn 0.6s ease-out;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    @media (max-width: 768px) {
+      .about-content {
+        grid-template-columns: 1fr;
+      }
+
+      .about-stats {
+        grid-template-columns: 1fr;
+      }
+
+      .info-section h2 {
+        font-size: 1.8rem;
+      }
+
+      .modal {
+        width: 95%;
+        max-width: 100%;
+      }
+
+      .how-it-works-modal {
+        width: 95%;
+        max-width: 100%;
+      }
+
+      .check-item-enhanced {
+        grid-template-columns: 1fr auto;
+      }
+
+      .check-score {
+        display: none;
+      }
+    }
+  </style>
   </style>
 </head>
 
@@ -500,10 +1086,10 @@
     </a>
 
     <ul class="nav-links">
-      <li><a href="#" class="active">Check Claim</a></li>
-      <li><a href="#">How It Works</a></li>
-      <li><a href="#">Recent Checks</a></li>
-      <li><a href="#">About Us</a></li> <!-- ← Added Here -->
+      <li><a href="#" onclick="scrollToHero()" class="active">Check Claim</a></li>
+      <li><a href="#" onclick="openHowItWorks(event)">How It Works</a></li>
+      <li><a href="#" onclick="openRecentChecks(event)">Recent Checks</a></li>
+      <li><a href="#" onclick="scrollToSection('about-us')">About Us</a></li>
     </ul>
 
     <div>
@@ -603,8 +1189,128 @@
     </div>
   </div>
 
+  <!-- ==================== HOW IT WORKS MODAL ==================== -->
+  <div id="howItWorksModal" class="how-it-works-modal" style="display: none; border: 2px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow);">
+    <div class="modal-header-enhanced" style="background: var(--surface); color: var(--text); border-bottom: 2px solid var(--border); padding: 1.5rem;">
+      <h2>SYS.MANUAL // BIAS DETECTION</h2>
+      <button class="modal-close" style="background:none; border:2px solid var(--border); color:var(--text); cursor:pointer; font-size:1.2rem; padding:4px 12px; font-family:'Space Mono', monospace;" onclick="closeHowItWorks()">[CLOSE]</button>
+    </div>
+    <div class="modal-body-enhanced" style="background: var(--bg); display: flex; flex-direction: column; gap: 1rem;">
+      <div class="process-step" style="background: var(--surface); border: 2px solid var(--border); padding: 1rem; position: relative;">
+        <div style="position: absolute; top: -10px; left: 10px; background: var(--accent); color: var(--bg); padding: 2px 8px; font-family: 'Space Mono', monospace; font-size: 0.8rem; font-weight: bold;">STEP 01</div>
+        <div class="step-content" style="margin-top: 0.5rem;">
+          <h3 style="font-family: 'Space Mono', monospace; text-transform: uppercase;">DATA_INPUT</h3>
+          <p style="font-family: 'Space Grotesk', sans-serif;">System accepts raw textual claims. Length unbounded. Parsing initiated instantly.</p>
+        </div>
+      </div>
+      <div class="process-step" style="background: var(--surface); border: 2px solid var(--border); padding: 1rem; position: relative;">
+        <div style="position: absolute; top: -10px; left: 10px; background: var(--accent); color: var(--bg); padding: 2px 8px; font-family: 'Space Mono', monospace; font-size: 0.8rem; font-weight: bold;">STEP 02</div>
+        <div class="step-content" style="margin-top: 0.5rem;">
+          <h3 style="font-family: 'Space Mono', monospace; text-transform: uppercase;">VADER_ANALYSIS</h3>
+          <p style="font-family: 'Space Grotesk', sans-serif;">Sentiment vectors extracted. Emotional volatility quantified. Propaganda signatures isolated.</p>
+        </div>
+      </div>
+      <div class="process-step" style="background: var(--surface); border: 2px solid var(--border); padding: 1rem; position: relative;">
+        <div style="position: absolute; top: -10px; left: 10px; background: var(--accent); color: var(--bg); padding: 2px 8px; font-family: 'Space Mono', monospace; font-size: 0.8rem; font-weight: bold;">STEP 03</div>
+        <div class="step-content" style="margin-top: 0.5rem;">
+          <h3 style="font-family: 'Space Mono', monospace; text-transform: uppercase;">PATTERN_MATCH</h3>
+          <p style="font-family: 'Space Grotesk', sans-serif;">Cross-referencing global database of established conspiracy lexicons and hyper-partisan structures.</p>
+        </div>
+      </div>
+      <div class="process-step" style="background: var(--surface); border: 2px solid var(--border); padding: 1rem; position: relative;">
+        <div style="position: absolute; top: -10px; left: 10px; background: var(--accent); color: var(--bg); padding: 2px 8px; font-family: 'Space Mono', monospace; font-size: 0.8rem; font-weight: bold;">STEP 04</div>
+        <div class="step-content" style="margin-top: 0.5rem;">
+          <h3 style="font-family: 'Space Mono', monospace; text-transform: uppercase;">OUTPUT_GENERATION</h3>
+          <p style="font-family: 'Space Grotesk', sans-serif;">Final risk score synthesized. Verdict rendered. Data visualized for user consumption.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== RECENT CHECKS MODAL (ENHANCED) ==================== -->
+  <div id="recentChecksModal" class="how-it-works-modal" style="display: none; border: 2px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow); background: var(--surface);">
+    <div class="modal-header-enhanced" style="background: var(--bg); color: var(--text); border-bottom: 2px solid var(--border); padding: 1.5rem; display: flex; justify-content: space-between; align-items: center;">
+      <h2 style="font-family: 'Space Mono', monospace;">// GLOBAL_HISTORY</h2>
+      <button class="modal-close" style="background:none; border:2px solid var(--border); color:var(--text); cursor:pointer; font-size:1.2rem; padding:4px 12px; font-family:'Space Mono', monospace;" onclick="closeRecentChecks()">[X]</button>
+    </div>
+    <div class="modal-body-enhanced" style="padding: 0; max-height: 60vh; overflow-y: auto; background: var(--surface);">
+      <table style="width: 100%; border-collapse: collapse; font-family: 'Space Grotesk', sans-serif;" id="historyTable">
+        <thead style="background: var(--border); color: var(--surface); position: sticky; top: 0; z-index: 10;">
+          <tr>
+            <th style="padding: 12px; text-align: left; font-family: 'Space Mono', monospace;">TIMESTAMP</th>
+            <th style="padding: 12px; text-align: left; font-family: 'Space Mono', monospace;">CLAIM_DATA</th>
+            <th style="padding: 12px; text-align: center; font-family: 'Space Mono', monospace;">SCORE</th>
+            <th style="padding: 12px; text-align: center; font-family: 'Space Mono', monospace;">STATUS</th>
+          </tr>
+        </thead>
+        <tbody id="recentChecksList">
+          <tr><td colspan="4" style="text-align:center; padding: 2rem; font-family:'Space Mono', monospace;">INITIALIZING CONNECTION...</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="modal-footer" id="recentChecksFooter" style="display: none; border-top: 2px solid var(--border); padding: 1rem; background: var(--bg);">
+      <div class="modal-footer-stats" style="display: flex; gap: 2rem; font-family: 'Space Mono', monospace;">
+        <div class="footer-stat" style="display:flex; align-items:center; gap: 8px;">
+          <div class="footer-stat-label">QUERY_COUNT:</div>
+          <div class="footer-stat-number" id="statsTotal" style="color:var(--accent);">0</div>
+        </div>
+        <div class="footer-stat" style="display:flex; align-items:center; gap: 8px;">
+          <div class="footer-stat-label">AVG_RISK:</div>
+          <div class="footer-stat-number" id="statsAvg" style="color:var(--accent);">0</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== ABOUT US SECTION ==================== -->
+  <section id="about-us" class="info-section" style="background: var(--bg); border-top: 4px solid var(--border); padding: 6rem 2rem;">
+    <div class="section-container" style="max-width: 900px; margin: 0 auto;">
+      <div style="border: 4px solid var(--border); background: var(--surface); box-shadow: var(--shadow); padding: 3rem; position: relative;">
+        <div style="position: absolute; top: -20px; left: -20px; background: var(--accent); padding: 10px 20px; border: 4px solid var(--border); font-family: 'Space Mono', monospace; font-weight: bold; font-size: 1.5rem; color: var(--bg);">MANIFESTO</div>
+        
+        <h2 style="margin-bottom: 2rem; font-size: 2.5rem; margin-top: 1rem;">INFORMATION WARS</h2>
+        <p style="font-size: 1.2rem; line-height: 1.6; margin-bottom: 2rem; border-left: 4px solid var(--accent); padding-left: 1rem; font-family: 'Space Grotesk', sans-serif;">
+          The modern digital landscape is polluted with synthetic truths and weaponized narratives. RumorGuard is a utilitarian tool built to cut through the noise.
+        </p>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-top: 3rem; border-top: 2px dashed var(--border); padding-top: 2rem;">
+          <div>
+            <h3 style="font-family: 'Space Mono', monospace; color: var(--accent); margin-bottom: 1rem;">// TECHNOLOGY</h3>
+            <p style="font-family: 'Space Grotesk', sans-serif;">Using Natural Language Processing, Sentiment Vectors, and strict heuristic checks to identify bad faith claims instantly. Pure data, zero bias.</p>
+          </div>
+          <div>
+            <h3 style="font-family: 'Space Mono', monospace; color: var(--accent); margin-bottom: 1rem;">// ETHOS</h3>
+            <p style="font-family: 'Space Grotesk', sans-serif;">Open access. No paywalls. We provide the analytics, you make the decisions. Defend your mind.</p>
+          </div>
+        </div>
+
+        <div style="display: flex; gap: 1rem; margin-top: 3rem;">
+          <div style="flex: 1; padding: 1rem; border: 2px solid var(--border); text-align: center;">
+            <div style="font-family: 'Space Mono', monospace; font-size: 2rem; font-weight: bold;">1M+</div>
+            <div style="font-size: 0.8rem; font-family: 'Space Mono', monospace; color: var(--text-muted);">SCANNED</div>
+          </div>
+          <div style="flex: 1; padding: 1rem; border: 2px solid var(--border); text-align: center; background: var(--accent); color: var(--bg);">
+            <div style="font-family: 'Space Mono', monospace; font-size: 2rem; font-weight: bold;">95%</div>
+            <div style="font-size: 0.8rem; font-family: 'Space Mono', monospace; color: var(--bg);">ACCURACY</div>
+          </div>
+          <div style="flex: 1; padding: 1rem; border: 2px solid var(--border); text-align: center;">
+            <div style="font-family: 'Space Mono', monospace; font-size: 2rem; font-weight: bold;">&lt;1s</div>
+            <div style="font-size: 0.8rem; font-family: 'Space Mono', monospace; color: var(--text-muted);">LATENCY</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Modal Overlay -->
+  <div id="modalOverlay" class="modal-overlay" style="display: none;" onclick="closeAllModals()"></div>
+
   <script>
-    // Dark Mode
+    // ==================== CONFIGURATION ====================
+    const API_BASE = "http://127.0.0.1:8000";
+    const CURRENT_USER = "GuestUser";
+
+    // ==================== THEME TOGGLE ====================
     const toggle = document.getElementById('themeToggle');
     toggle.addEventListener('click', () => {
       const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
@@ -616,10 +1322,131 @@
       document.documentElement.setAttribute('data-theme', 'dark');
     }
 
+    // ==================== HELPER FUNCTIONS ====================
     function fillExample(el) {
       document.getElementById('claim-input').value = el.textContent;
+      document.getElementById('claim-input').focus();
     }
 
+    function scrollToSection(sectionId) {
+      const section = document.getElementById(sectionId);
+      if (section) {
+        section.scrollIntoView({ behavior: 'smooth' });
+      }
+    }
+
+    function scrollToHero() {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function closeAllModals() {
+      closeHowItWorks();
+      closeRecentChecks();
+    }
+
+    // ==================== HOW IT WORKS MODAL ====================
+    function openHowItWorks(e) {
+      e.preventDefault();
+      const modal = document.getElementById('howItWorksModal');
+      const overlay = document.getElementById('modalOverlay');
+      modal.style.display = 'block';
+      overlay.style.display = 'block';
+    }
+
+    function closeHowItWorks() {
+      const modal = document.getElementById('howItWorksModal');
+      const overlay = document.getElementById('modalOverlay');
+      modal.style.display = 'none';
+      overlay.style.display = 'none';
+    }
+
+    // ==================== RECENT CHECKS MODAL ====================
+    async function openRecentChecks(e) {
+      if (e) e.preventDefault();
+      
+      const modal = document.getElementById('recentChecksModal');
+      const overlay = document.getElementById('modalOverlay');
+      const listContainer = document.getElementById('recentChecksList');
+
+      modal.style.display = 'block';
+      overlay.style.display = 'block';
+
+      // Show loading state
+      listContainer.innerHTML = `
+        <div style="text-align: center; padding: 2rem;">
+          <div class="loading-spinner"></div>
+          <p style="margin-top: 1rem; color: var(--text-muted);">Loading your recent checks...</p>
+        </div>
+      `;
+
+      try {
+        // Fetch history and stats in parallel
+        const [historyRes, statsRes] = await Promise.all([
+          fetch(`${API_BASE}/history/${CURRENT_USER}?limit=10`),
+          fetch(`${API_BASE}/stats/${CURRENT_USER}`)
+        ]);
+
+        if (!historyRes.ok || !statsRes.ok) {
+          throw new Error("API error");
+        }
+
+        const historyData = await historyRes.json();
+        const statsData = await statsRes.json();
+
+        // Render checks
+        if (!historyData.items || historyData.items.length === 0) {
+          listContainer.innerHTML = `<tr><td colspan='4' style='text-align:center; padding: 2rem;'>NO DATA FOUND in DB.</td></tr>`;
+        } else {
+          const checksHTML = historyData.items.map((check) => {
+            const badgeClass = check.label.toLowerCase();
+            const badgeText = check.label.toUpperCase();
+            const checkText = check.text.length > 50 ? check.text.substring(0, 50) + '…' : check.text;
+            const createdDate = new Date(check.created_at).toLocaleTimeString();
+            
+            return `
+              <tr style="border-bottom: 1px solid var(--border); transition: background 0.2s;">
+                <td style="padding: 12px; font-family: 'Space Mono', monospace; font-size: 0.85rem; color: var(--text-muted);">${createdDate}</td>
+                <td style="padding: 12px; font-weight: 500;">"${checkText}"</td>
+                <td style="padding: 12px; text-align: center; font-family: 'Space Mono', monospace; font-weight: bold;">${Math.round(check.score)}</td>
+                <td style="padding: 12px; text-align: center;">
+                  <span style="display: inline-block; padding: 4px 8px; border: 1px solid var(--border); font-size: 0.75rem; font-family: 'Space Mono', monospace; font-weight: bold; background: ${badgeClass === 'true' ? 'var(--green-light)' : badgeClass === 'false' ? 'var(--red-light)' : 'var(--yellow-light)'}; color: ${badgeClass === 'true' ? 'var(--green)' : badgeClass === 'false' ? 'var(--red)' : 'var(--yellow)'};">${badgeText}</span>
+                </td>
+              </tr>
+            `;
+          }).join('');
+
+          listContainer.innerHTML = `${checksHTML}`;
+        }
+
+        // Render stats footer
+        const footer = document.getElementById('recentChecksFooter');
+        if (historyData.items && historyData.items.length > 0) {
+          document.getElementById('statsTotal').textContent = statsData.total_analyses;
+          document.getElementById('statsAvg').textContent = statsData.average_score.toFixed(0);
+          footer.style.display = 'flex';
+        } else {
+          footer.style.display = 'none';
+        }
+
+      } catch (e) {
+        console.error(e);
+        listContainer.innerHTML = `
+          <div class="empty-state">
+            <p>⚠️ Error loading checks</p>
+            <p style="font-size: 0.9rem;">Make sure the backend is running.</p>
+          </div>
+        `;
+      }
+    }
+
+    function closeRecentChecks() {
+      const modal = document.getElementById('recentChecksModal');
+      const overlay = document.getElementById('modalOverlay');
+      modal.style.display = 'none';
+      overlay.style.display = 'none';
+    }
+
+    // ==================== CLAIM ANALYSIS ====================
     async function checkClaim() {
       const input = document.getElementById('claim-input');
       const claim = input.value.trim();
@@ -639,7 +1466,7 @@
       btnText.textContent = 'Analyzing...';
 
       try {
-        const response = await fetch("http://127.0.0.1:8000/analyze", {
+        const response = await fetch(`${API_BASE}/analyze`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ text: claim, url: "" })
@@ -663,14 +1490,17 @@
         for (let line of aiLines) {
           if (line.startsWith("Verdict:")) label = line.replace("Verdict:", "").trim();
           if (line.startsWith("Reason:")) desc = line.replace("Reason:", "").trim();
-          if (line.startsWith("Confidence:")) confidence = parseInt(line.replace("Confidence:", "").trim() || "50");
+          if (line.startsWith("Confidence:")) {
+            const confStr = line.replace("Confidence:", "").trim();
+            confidence = parseInt(confStr.replace('%', '') || "50");
+          }
         }
 
-        // Backend score is 100 for True, 0 for Fake. The UI expects a "Risk Score" (0-100 where 100 is highest risk).
-        let riskScore = 100 - Math.round(data.score || 0);
+        // Score from backend is 0-100 (truth score). UI displays it as-is.
+        let displayScore = Math.round(data.score);
 
         const result = {
-          score: riskScore,
+          score: displayScore,
           label: label,
           confidence: confidence,
           desc: desc
@@ -679,7 +1509,8 @@
         showResult(result);
 
       } catch (e) {
-        alert("Something went wrong or the backend is not running. Please start the backend and try again.");
+        console.error(e);
+        alert("Error connecting to backend. Make sure the API is running on http://127.0.0.1:8000");
       } finally {
         btn.disabled = false;
         spinner.style.display = 'none';
@@ -692,9 +1523,9 @@
       card.style.display = 'block';
       card.scrollIntoView({ behavior: 'smooth' });
 
-      card.className = 'result-card';
-      if (data.label.includes("False")) card.classList.add('theme-false');
-      else if (data.label.includes("True")) card.classList.add('theme-true');
+      card.className = 'result-card fade-in';
+      if (data.label.toLowerCase().includes("false")) card.classList.add('theme-false');
+      else if (data.label.toLowerCase().includes("true")) card.classList.add('theme-true');
       else card.classList.add('theme-uncertain');
 
       const gaugeFill = document.getElementById('gaugeFill');
@@ -704,33 +1535,51 @@
       document.getElementById('gaugeNumber').textContent = data.score;
       document.getElementById('verdictLabel').textContent = data.label.toUpperCase();
       document.getElementById('verdictTitle').textContent =
-        data.label.includes("False") ? "This claim appears false" :
-          data.label.includes("True") ? "This claim appears credible" : "Verdict is uncertain";
+        data.label.toLowerCase().includes("false") ? "This claim appears false" :
+          data.label.toLowerCase().includes("true") ? "This claim appears credible" : "Verdict is uncertain";
 
       document.getElementById('verdictDesc').textContent = data.desc;
       document.getElementById('confValue').textContent = data.confidence + "%";
       document.getElementById('confBar').style.width = data.confidence + "%";
 
-      const reasonsHTML = `
-        <div class="reason-tag">⚠️ Emotional language detected</div>
-        <div class="reason-tag">📉 No credible sources</div>
-        <div class="reason-tag">🔥 Sensationalist headline</div>
-      `;
+      // Show relevant signals
+      const signals = [];
+      if (data.score < 40) {
+        signals.push("⚠️ Misinformation signals detected");
+        signals.push("📊 Low credibility markers");
+      } else if (data.score > 70) {
+        signals.push("✓ Credible sourcing");
+        signals.push("📝 Measured language");
+      } else {
+        signals.push("? Mixed signals");
+        signals.push("⚖️ Requires further investigation");
+      }
+
+      const reasonsHTML = signals.map(s => `<div class="reason-tag">${s}</div>`).join('');
       document.getElementById('reasonTags').innerHTML = reasonsHTML;
     }
 
     function shareResult() {
-      alert("Link copied to clipboard! (Demo)");
+      alert("Share functionality coming soon!");
     }
 
     function checkAnother() {
       document.getElementById('resultCard').style.display = 'none';
+      document.getElementById('claim-input').value = '';
       document.getElementById('claim-input').focus();
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
+    // ==================== EVENT LISTENERS ====================
     document.getElementById('claim-input').addEventListener('keydown', (e) => {
       if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') checkClaim();
+    });
+
+    // Close modals on Escape
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        closeAllModals();
+      }
     });
   </script>
 </body>
