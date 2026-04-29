@@ -1,0 +1,1846 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>RumorGuard</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --bg: #f5f4f0;
+      --surface: #ffffff;
+      --border: rgba(0,0,0,0.10);
+      --text: #1a1a1a;
+      --text-muted: #6b6b6b;
+      --accent: #d94f2b;
+      --accent-light: #fdf0ec;
+      --accent-hover: #bf3d1e;
+      --nav-h: 64px;
+    }
+    [data-theme="dark"] {
+      --bg: #111110;
+      --surface: #1c1c1a;
+      --border: rgba(255,255,255,0.09);
+      --text: #f0ede8;
+      --text-muted: #888884;
+      --accent: #e8623e;
+      --accent-light: #2a1810;
+      --accent-hover: #f0734f;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      transition: background 0.3s, color 0.3s;
+    }
+
+    /* ── NAVBAR (from component 1) ── */
+    nav {
+      position: sticky; top: 0; z-index: 100;
+      height: var(--nav-h);
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      display: flex; align-items: center;
+      justify-content: space-between;
+      padding: 0 2rem;
+    }
+    .logo { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+    .logo-icon { width: 34px; height: 34px; background: var(--accent); border-radius: 8px; display: flex; align-items: center; justify-content: center; }
+    .logo-icon svg { width: 18px; height: 18px; fill: #fff; }
+    .logo-text { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.2rem; color: var(--text); letter-spacing: -0.02em; }
+    .logo-text span { color: var(--accent); }
+    .nav-links { display: flex; align-items: center; gap: 0.25rem; list-style: none; }
+    .nav-links a { text-decoration: none; font-size: 0.875rem; font-weight: 500; color: var(--text-muted); padding: 6px 14px; border-radius: 8px; transition: background 0.15s, color 0.15s; }
+    .nav-links a:hover, .nav-links a.active { background: var(--accent-light); color: var(--accent); }
+    .nav-right { display: flex; align-items: center; gap: 12px; }
+    .theme-toggle { width: 40px; height: 40px; border: 1px solid var(--border); border-radius: 10px; background: transparent; cursor: pointer; display: flex; align-items: center; justify-content: center; color: var(--text-muted); transition: background 0.15s; }
+    .theme-toggle:hover { background: var(--accent-light); color: var(--accent); }
+    .theme-toggle svg { width: 18px; height: 18px; }
+    .btn-nav { background: var(--accent); color: #fff; border: none; padding: 8px 20px; border-radius: 10px; font-family: 'DM Sans', sans-serif; font-size: 0.875rem; font-weight: 500; cursor: pointer; transition: opacity 0.15s; }
+    .btn-nav:hover { opacity: 0.88; }
+    @media (max-width: 640px) { .nav-links, .btn-nav { display: none; } }
+
+    /* ══════════════════════════════════
+       HERO SECTION — starts here
+    ══════════════════════════════════ */
+
+    .hero {
+      min-height: calc(100vh - var(--nav-h));
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 4rem 1.5rem 6rem;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* subtle dot-grid background */
+    .hero::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image: radial-gradient(circle, var(--border) 1px, transparent 1px);
+      background-size: 28px 28px;
+      opacity: 0.5;
+      pointer-events: none;
+    }
+
+    /* floating badge above headline */
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.75rem;
+      font-weight: 500;
+      color: var(--accent);
+      background: var(--accent-light);
+      border: 1px solid rgba(217, 79, 43, 0.2);
+      padding: 5px 14px;
+      border-radius: 20px;
+      margin-bottom: 1.5rem;
+      animation: fadeDown 0.5s ease both;
+    }
+    .hero-badge::before {
+      content: '';
+      width: 6px; height: 6px;
+      background: var(--accent);
+      border-radius: 50%;
+      animation: pulse 1.8s infinite;
+    }
+
+    /* main headline */
+    .hero h1 {
+      font-family: 'Syne', sans-serif;
+      font-weight: 800;
+      font-size: clamp(2.4rem, 7vw, 4.2rem);
+      letter-spacing: -0.04em;
+      line-height: 1.05;
+      max-width: 720px;
+      margin-bottom: 1.25rem;
+      animation: fadeDown 0.55s 0.1s ease both;
+    }
+    .hero h1 .highlight {
+      color: var(--accent);
+      position: relative;
+      display: inline-block;
+    }
+    /* strikethrough "rumor" effect */
+    .hero h1 .strike {
+      position: relative;
+      color: var(--text-muted);
+    }
+    .hero h1 .strike::after {
+      content: '';
+      position: absolute;
+      left: 0; right: 0;
+      top: 50%;
+      height: 3px;
+      background: var(--accent);
+      border-radius: 2px;
+      transform: rotate(-2deg);
+    }
+
+    /* subheadline */
+    .hero-sub {
+      font-size: 1rem;
+      color: var(--text-muted);
+      max-width: 480px;
+      line-height: 1.7;
+      margin-bottom: 2.5rem;
+      animation: fadeDown 0.55s 0.2s ease both;
+    }
+
+    /* ── SEARCH BOX ── */
+    .search-box {
+      width: 100%;
+      max-width: 680px;
+      background: var(--surface);
+      border: 1.5px solid var(--border);
+      border-radius: 20px;
+      padding: 1.25rem 1.5rem;
+      box-shadow: 0 4px 40px rgba(0,0,0,0.06);
+      transition: border-color 0.2s, box-shadow 0.2s;
+      animation: fadeUp 0.55s 0.25s ease both;
+      position: relative;
+      z-index: 1;
+    }
+    .search-box:focus-within {
+      border-color: var(--accent);
+      box-shadow: 0 4px 40px rgba(217,79,43,0.12);
+    }
+
+    .search-label {
+      font-size: 0.75rem;
+      font-weight: 500;
+      color: var(--text-muted);
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      margin-bottom: 0.6rem;
+      display: block;
+    }
+
+    .search-textarea {
+      width: 100%;
+      min-height: 100px;
+      resize: none;
+      border: none;
+      outline: none;
+      background: transparent;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 1rem;
+      color: var(--text);
+      line-height: 1.6;
+    }
+    .search-textarea::placeholder { color: var(--text-muted); opacity: 0.7; }
+
+    /* char count + bottom row */
+    .search-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 1rem;
+      padding-top: 0.75rem;
+      border-top: 1px solid var(--border);
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .char-count {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
+    .char-count.warn { color: #e8a020; }
+    .char-count.over  { color: var(--accent); }
+
+    /* quick example chips */
+    .chips {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+    .chip {
+      font-size: 0.72rem;
+      font-weight: 500;
+      color: var(--text-muted);
+      background: var(--bg);
+      border: 1px solid var(--border);
+      padding: 4px 10px;
+      border-radius: 20px;
+      cursor: pointer;
+      transition: background 0.15s, color 0.15s;
+      white-space: nowrap;
+    }
+    .chip:hover { background: var(--accent-light); color: var(--accent); border-color: rgba(217,79,43,0.2); }
+
+    /* submit button */
+    .btn-check {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      padding: 11px 26px;
+      border-radius: 12px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.9rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background 0.15s, transform 0.1s, opacity 0.15s;
+      white-space: nowrap;
+    }
+    .btn-check:hover { background: var(--accent-hover); transform: translateY(-1px); }
+    .btn-check:active { transform: scale(0.97); }
+    .btn-check:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+    .btn-check svg { width: 16px; height: 16px; fill: #fff; }
+
+    /* spinner inside button */
+    .spinner {
+      width: 16px; height: 16px;
+      border: 2px solid rgba(255,255,255,0.35);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      display: none;
+    }
+
+    /* ── TRUST STATS below search box ── */
+    .trust-row {
+      display: flex;
+      align-items: center;
+      gap: 2rem;
+      margin-top: 2rem;
+      animation: fadeUp 0.55s 0.35s ease both;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    .trust-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+    .trust-item svg { width: 14px; height: 14px; fill: var(--accent); opacity: 0.8; }
+
+    /* ── Result placeholder (shown after submit) ── */
+    .result-placeholder {
+      width: 100%;
+      max-width: 680px;
+      margin-top: 1.5rem;
+      padding: 1.25rem 1.5rem;
+      background: var(--surface);
+      border: 1.5px dashed var(--border);
+      border-radius: 16px;
+      font-size: 0.875rem;
+      color: var(--text-muted);
+      text-align: center;
+      display: none;
+      animation: fadeUp 0.3s ease both;
+      z-index: 1;
+      position: relative;
+    }
+    .result-placeholder.visible { display: block; }
+
+    /* ── ANIMATIONS ── */
+    @keyframes fadeDown {
+      from { opacity: 0; transform: translateY(-16px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(16px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50%       { opacity: 0.5; transform: scale(0.7); }
+    }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Navbar -->
+  <nav>
+    <a href="#" class="logo">
+      <div class="logo-icon">
+        <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>
+      </div>
+      <span class="logo-text">Rumor<span>Guard</span></span>
+    </a>
+    <ul class="nav-links">
+      <li><a href="#" class="active">Check Claim</a></li>
+      <li><a href="#">How It Works</a></li>
+      <li><a href="#">Recent Checks</a></li>
+      <li><a href="#">About</a></li>
+    </ul>
+    <div class="nav-right">
+      <button class="theme-toggle" id="themeToggle" title="Toggle dark mode">
+        <svg id="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:none"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+        <svg id="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+      </button>
+     
+    </div>
+  </nav>
+
+  <!-- ══════════════════════════════════
+       HERO + SEARCH BAR — main section
+  ══════════════════════════════════ -->
+  <section class="hero">
+
+    <!-- Live badge -->
+    <div class="hero-badge">AI-powered fact detection — live</div>
+
+    <!-- Headline -->
+    <h1>
+      Kill the <span class="strike">rumor</span><br/>
+      before it kills <span class="highlight">trust.</span>
+    </h1>
+
+    <!-- Subheadline -->
+    <p class="hero-sub">
+      Paste any claim, headline, or message. RumorGuard's ML engine detects sensationalism and emotional hijacking in seconds.
+    </p>
+
+    <!-- Search / Input Box -->
+    <div class="search-box">
+      <span class="search-label">Paste a claim, headline, or rumor</span>
+
+      <textarea
+        id="claim-input"
+        class="search-textarea"
+        maxlength="600"
+        placeholder='e.g. "Scientists confirm drinking coffee cures cancer permanently"'
+      ></textarea>
+
+      <div class="search-footer">
+        <!-- Left: quick example chips -->
+        <div class="chips">
+          <span class="chip" onclick="fillExample(this)">5G causes disease</span>
+          <span class="chip" onclick="fillExample(this)">Vaccines contain microchips</span>
+          <span class="chip" onclick="fillExample(this)">Try an example →</span>
+        </div>
+
+        <!-- Right: char count + button -->
+        <div style="display:flex; align-items:center; gap:12px;">
+          <span class="char-count" id="charCount">0 / 600</span>
+          <button class="btn-check" id="checkBtn" onclick="checkClaim()">
+            <span class="spinner" id="spinner"></span>
+            <svg id="btnIcon" viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+            <span id="btnText">Check Claim</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Trust indicators -->
+    <div class="trust-row">
+      <div class="trust-item">
+        <svg viewBox="0 0 24 24"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z"/></svg>
+        ML-powered detection
+      </div>
+      <div class="trust-item">
+        <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
+        Cross-checked with fact databases
+      </div>
+      <div class="trust-item">
+        <svg viewBox="0 0 24 24"><path d="M13 3c-4.97 0-9 4.03-9 9H1l3.89 3.89.07.14L9 12H6c0-3.87 3.13-7 7-7s7 3.13 7 7-3.13 7-7 7c-1.93 0-3.68-.79-4.94-2.06l-1.42 1.42C8.27 19.99 10.51 21 13 21c4.97 0 9-4.03 9-9s-4.03-9-9-9zm-1 5v5l4.28 2.54.72-1.21-3.5-2.08V8H12z"/></svg>
+        Results in under 3 seconds
+      </div>
+    </div>
+
+    <!-- Result slot (Component 3 will go here) -->
+    <div class="result-placeholder" id="resultSlot">
+      ⬇ Result card will appear here — Component 3 coming next!
+    </div>
+  <style>
+    :root {
+      --bg: #f5f4f0;
+      --surface: #ffffff;
+      --border: rgba(0,0,0,0.10);
+      --text: #1a1a1a;
+      --text-muted: #6b6b6b;
+      --accent: #d94f2b;
+      --accent-light: #fdf0ec;
+      --accent-hover: #bf3d1e;
+      --nav-h: 64px;
+      --green: #1D9E75;
+      --green-light: #E1F5EE;
+      --yellow: #BA7517;
+      --yellow-light: #FAEEDA;
+      --red: #A32D2D;
+      --red-light: #FCEBEB;
+    }
+    [data-theme="dark"] {
+      --bg: #111110;
+      --surface: #1c1c1a;
+      --border: rgba(255,255,255,0.09);
+      --text: #f0ede8;
+      --text-muted: #888884;
+      --accent: #e8623e;
+      --accent-light: #2a1810;
+      --accent-hover: #f0734f;
+      --green: #5DCAA5;
+      --green-light: #04342C;
+      --yellow: #EF9F27;
+      --yellow-light: #412402;
+      --red: #F09595;
+      --red-light: #501313;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      transition: background 0.3s, color 0.3s;
+      padding: 2rem 1.5rem 4rem;
+    }
+
+    /* ── Navbar ── */
+    nav {
+      position: sticky; top: 0; z-index: 100;
+      height: var(--nav-h);
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      display: flex; align-items: center;
+      justify-content: space-between;
+      padding: 0 2rem;
+      margin: -2rem -1.5rem 2rem;
+    }
+    .logo { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+    .logo-icon { width: 34px; height: 34px; background: var(--accent); border-radius: 8px; display: flex; align-items: center; justify-content: center; }
+    .logo-icon svg { width: 18px; height: 18px; fill: #fff; }
+    .logo-text { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.2rem; color: var(--text); letter-spacing: -0.02em; }
+    .logo-text span { color: var(--accent); }
+    .nav-right { display: flex; align-items: center; gap: 12px; }
+    .theme-toggle { width: 40px; height: 40px; border: 1px solid var(--border); border-radius: 10px; background: transparent; cursor: pointer; display: flex; align-items: center; justify-content: center; color: var(--text-muted); transition: background 0.15s; }
+    .theme-toggle:hover { background: var(--accent-light); color: var(--accent); }
+    .theme-toggle svg { width: 18px; height: 18px; }
+
+    /* ════════════════════════════════
+       RESULT CARD
+    ════════════════════════════════ */
+
+    .result-wrapper {
+      max-width: 680px;
+      margin: 0 auto;
+    }
+
+    /* demo controls */
+    .demo-bar {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 1.5rem;
+      flex-wrap: wrap;
+    }
+    .demo-btn {
+      font-size: 0.8rem;
+      font-weight: 500;
+      padding: 6px 16px;
+      border-radius: 20px;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .demo-btn:hover { background: var(--accent-light); color: var(--accent); border-color: rgba(217,79,43,0.2); }
+
+    /* the card itself */
+    .result-card {
+      background: var(--surface);
+      border: 1.5px solid var(--border);
+      border-radius: 20px;
+      overflow: hidden;
+      animation: fadeUp 0.4s ease both;
+    }
+
+    /* top colour strip */
+    .result-card .top-strip {
+      height: 5px;
+      width: 100%;
+      transition: background 0.4s;
+    }
+
+    .result-card .card-body {
+      padding: 1.75rem 2rem;
+    }
+
+    /* ── Score row ── */
+    .score-row {
+      display: flex;
+      align-items: center;
+      gap: 1.5rem;
+      margin-bottom: 1.5rem;
+      flex-wrap: wrap;
+    }
+
+    /* circular gauge */
+    .gauge-wrap {
+      position: relative;
+      width: 110px;
+      height: 110px;
+      flex-shrink: 0;
+    }
+    .gauge-wrap svg { width: 110px; height: 110px; transform: rotate(-90deg); }
+    .gauge-bg { fill: none; stroke: var(--border); stroke-width: 8; }
+    .gauge-fill {
+      fill: none;
+      stroke-width: 8;
+      stroke-linecap: round;
+      stroke-dasharray: 283;
+      stroke-dashoffset: 283;
+      transition: stroke-dashoffset 1.2s cubic-bezier(.4,0,.2,1), stroke 0.4s;
+    }
+    .gauge-label {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 1px;
+    }
+    .gauge-number {
+      font-family: 'Syne', sans-serif;
+      font-weight: 800;
+      font-size: 1.9rem;
+      line-height: 1;
+      transition: color 0.4s;
+    }
+    .gauge-sub {
+      font-size: 0.65rem;
+      color: var(--text-muted);
+      font-weight: 500;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    /* verdict text */
+    .verdict-block { flex: 1; min-width: 180px; }
+    .verdict-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      padding: 4px 12px;
+      border-radius: 20px;
+      margin-bottom: 0.6rem;
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+    }
+    .verdict-badge .dot {
+      width: 7px; height: 7px;
+      border-radius: 50%;
+    }
+    .verdict-title {
+      font-family: 'Syne', sans-serif;
+      font-weight: 700;
+      font-size: 1.4rem;
+      letter-spacing: -0.02em;
+      line-height: 1.2;
+      margin-bottom: 0.4rem;
+      transition: color 0.4s;
+    }
+    .verdict-desc {
+      font-size: 0.875rem;
+      color: var(--text-muted);
+      line-height: 1.6;
+    }
+
+    /* ── Divider ── */
+    .divider {
+      height: 1px;
+      background: var(--border);
+      margin: 1.25rem 0;
+    }
+
+    /* ── Reason tags ── */
+    .reasons-label {
+      font-size: 0.72rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      margin-bottom: 0.65rem;
+    }
+    .reason-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 7px;
+    }
+    .reason-tag {
+      font-size: 0.8rem;
+      padding: 5px 12px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: var(--bg);
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      animation: fadeUp 0.3s ease both;
+    }
+    .reason-tag svg { width: 13px; height: 13px; flex-shrink: 0; }
+
+    /* ── Confidence bar ── */
+    .conf-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 1.25rem;
+      margin-bottom: 0.4rem;
+      font-size: 0.78rem;
+    }
+    .conf-row span { color: var(--text-muted); }
+    .conf-row strong { color: var(--text); }
+    .conf-bar-bg {
+      height: 6px;
+      background: var(--bg);
+      border-radius: 10px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+    }
+    .conf-bar-fill {
+      height: 100%;
+      border-radius: 10px;
+      transition: width 1s cubic-bezier(.4,0,.2,1), background 0.4s;
+      width: 0%;
+    }
+
+    /* ── Card footer ── */
+    .card-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1rem 2rem;
+      border-top: 1px solid var(--border);
+      background: var(--bg);
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .footer-meta {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .footer-meta svg { width: 13px; height: 13px; fill: var(--text-muted); }
+    .footer-actions { display: flex; gap: 8px; }
+    .action-btn {
+      font-size: 0.78rem;
+      font-weight: 500;
+      padding: 6px 14px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--text-muted);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      transition: all 0.15s;
+    }
+    .action-btn:hover { background: var(--accent-light); color: var(--accent); border-color: rgba(217,79,43,0.2); }
+    .action-btn svg { width: 13px; height: 13px; }
+
+    /* ── Colour themes per verdict ── */
+    /* FALSE */
+    .theme-false .top-strip    { background: var(--red); }
+    .theme-false .gauge-fill   { stroke: var(--red); }
+    .theme-false .gauge-number { color: var(--red); }
+    .theme-false .verdict-badge { background: var(--red-light); color: var(--red); }
+    .theme-false .verdict-badge .dot { background: var(--red); }
+    .theme-false .verdict-title { color: var(--red); }
+    .theme-false .conf-bar-fill { background: var(--red); }
+
+    /* UNCERTAIN */
+    .theme-uncertain .top-strip    { background: var(--yellow); }
+    .theme-uncertain .gauge-fill   { stroke: var(--yellow); }
+    .theme-uncertain .gauge-number { color: var(--yellow); }
+    .theme-uncertain .verdict-badge { background: var(--yellow-light); color: var(--yellow); }
+    .theme-uncertain .verdict-badge .dot { background: var(--yellow); }
+    .theme-uncertain .verdict-title { color: var(--yellow); }
+    .theme-uncertain .conf-bar-fill { background: var(--yellow); }
+
+    /* TRUE */
+    .theme-true .top-strip    { background: var(--green); }
+    .theme-true .gauge-fill   { stroke: var(--green); }
+    .theme-true .gauge-number { color: var(--green); }
+    .theme-true .verdict-badge { background: var(--green-light); color: var(--green); }
+    .theme-true .verdict-badge .dot { background: var(--green); }
+    .theme-true .verdict-title { color: var(--green); }
+    .theme-true .conf-bar-fill { background: var(--green); }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(12px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+
+  <div class="result-wrapper">
+
+    <!-- Demo buttons to preview all 3 states -->
+    <div class="demo-bar">
+      <span style="font-size:0.8rem; color:var(--text-muted); align-self:center;">Preview:</span>
+      <button class="demo-btn" onclick="showResult({score:82, label:'Likely False', confidence:88, reasons:['Emotional language detected','No credible sources','Sensationalist headline','Unverified statistics']})">🔴 Likely False</button>
+      <button class="demo-btn" onclick="showResult({score:48, label:'Uncertain', confidence:52, reasons:['Mixed signals detected','Partial evidence found','Needs more context']})">🟡 Uncertain</button>
+      <button class="demo-btn" onclick="showResult({score:12, label:'Likely True', confidence:91, reasons:['Multiple credible sources','Verified by fact-checkers','Consistent reporting']})">🟢 Likely True</button>
+    </div>
+
+    <div class="result-card theme-false" id="resultCard">
+
+      <!-- colour strip at top -->
+      <div class="top-strip"></div>
+
+      <div class="card-body">
+
+        <!-- Score + Verdict row -->
+        <div class="score-row">
+
+          <!-- Circular gauge -->
+          <div class="gauge-wrap">
+            <svg viewBox="0 0 100 100">
+              <circle class="gauge-bg" cx="50" cy="50" r="45"/>
+              <circle class="gauge-fill" id="gaugeFill" cx="50" cy="50" r="45"/>
+            </svg>
+            <div class="gauge-label">
+              <span class="gauge-number" id="gaugeNumber">0</span>
+              <span class="gauge-sub">risk score</span>
+            </div>
+          </div>
+
+          <!-- Verdict text -->
+          <div class="verdict-block">
+            <div class="verdict-badge" id="verdictBadge">
+              <span class="dot"></span>
+              <span id="verdictBadgeText">Likely False</span>
+            </div>
+            <div class="verdict-title" id="verdictTitle">This claim appears false</div>
+            <div class="verdict-desc" id="verdictDesc">
+              Our ML model detected high levels of emotional language and sensationalism. No credible sources were found to support this claim.
+            </div>
+          </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <!-- Reason tags -->
+        <div class="reasons-label">Signals detected</div>
+        <div class="reason-tags" id="reasonTags"></div>
+
+        <!-- Confidence bar -->
+        <div class="conf-row">
+          <span>Model confidence</span>
+          <strong id="confValue">88%</strong>
+        </div>
+        <div class="conf-bar-bg">
+          <div class="conf-bar-fill" id="confBar"></div>
+        </div>
+
+      </div>
+
+      <!-- Card footer -->
+      <div class="card-footer">
+        <div class="footer-meta">
+          <svg viewBox="0 0 24 24"><path d="M13 3c-4.97 0-9 4.03-9 9H1l3.89 3.89.07.14L9 12H6c0-3.87 3.13-7 7-7s7 3.13 7 7-3.13 7-7 7c-1.93 0-3.68-.79-4.94-2.06l-1.42 1.42C8.27 19.99 10.51 21 13 21c4.97 0 9-4.03 9-9s-4.03-9-9-9zm-1 5v5l4.28 2.54.72-1.21-3.5-2.08V8H12z"/></svg>
+          Checked just now · RumorGuard ML v2
+        </div>
+        <div class="footer-actions">
+          <button class="action-btn" onclick="shareResult()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+            Share
+          </button>
+          <button class="action-btn" onclick="checkAnother()">
+            Check another
+          </button>
+        </div>
+      </div>
+
+    </div>
+    <!-- END RESULT CARD -->
+
+  </div>
+
+  <script>
+
+    /* ════════════════════════════════
+       showResult(data) — call this
+       function with your API response
+       to populate the card
+    ════════════════════════════════ */
+    function showResult(data) {
+      const card      = document.getElementById('resultCard');
+      const gaugeFill = document.getElementById('gaugeFill');
+      const gaugeNum  = document.getElementById('gaugeNumber');
+      const badge     = document.getElementById('verdictBadge');
+      const badgeTxt  = document.getElementById('verdictBadgeText');
+      const title     = document.getElementById('verdictTitle');
+      const desc      = document.getElementById('verdictDesc');
+      const tagsWrap  = document.getElementById('reasonTags');
+      const confVal   = document.getElementById('confValue');
+      const confBar   = document.getElementById('confBar');
+
+      const score      = data.score      || 0;
+      const label      = data.label      || 'Uncertain';
+      const confidence = data.confidence || 70;
+      const reasons    = data.reasons    || [];
+
+      /* verdict theme */
+      card.className = 'result-card';
+      let themeClass, titleText, descText, tagIcon;
+      if (label.toLowerCase().includes('false')) {
+        themeClass = 'theme-false';
+        titleText  = 'This claim appears false';
+        descText   = 'Our ML model detected high emotional language and sensationalism. No credible sources support this claim.';
+        tagIcon    = `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>`;
+      } else if (label.toLowerCase().includes('true')) {
+        themeClass = 'theme-true';
+        titleText  = 'This claim appears credible';
+        descText   = 'Multiple credible sources support this claim. Low sensationalism detected.';
+        tagIcon    = `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>`;
+      } else {
+        themeClass = 'theme-uncertain';
+        titleText  = 'Verdict is uncertain';
+        descText   = 'Mixed signals were detected. We recommend checking additional sources before sharing.';
+        tagIcon    = `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>`;
+      }
+      card.classList.add(themeClass);
+
+      /* animate gauge */
+      const circumference = 283;
+      const offset = circumference - (score / 100) * circumference;
+      gaugeFill.style.strokeDashoffset = circumference;
+      setTimeout(() => { gaugeFill.style.strokeDashoffset = offset; }, 50);
+
+      /* animate number count-up */
+      let current = 0;
+      const step = Math.ceil(score / 40);
+      const counter = setInterval(() => {
+        current = Math.min(current + step, score);
+        gaugeNum.textContent = current;
+        if (current >= score) clearInterval(counter);
+      }, 25);
+
+      /* text */
+      badgeTxt.textContent = label;
+      title.textContent    = titleText;
+      desc.textContent     = descText;
+      confVal.textContent  = confidence + '%';
+
+      /* confidence bar */
+      confBar.style.width = '0%';
+      setTimeout(() => { confBar.style.width = confidence + '%'; }, 100);
+
+      /* reason tags */
+      tagsWrap.innerHTML = '';
+      reasons.forEach((r, i) => {
+        const tag = document.createElement('div');
+        tag.className = 'reason-tag';
+        tag.style.animationDelay = (i * 0.07) + 's';
+        tag.innerHTML = tagIcon + r;
+        tagsWrap.appendChild(tag);
+      });
+    }
+
+    /* share button */
+    function shareResult() {
+      const title = document.getElementById('verdictTitle').textContent;
+      const score = document.getElementById('gaugeNumber').textContent;
+      navigator.clipboard.writeText(`RumorGuard verdict: "${title}" — Risk score: ${score}/100`)
+        .then(() => alert('Result copied to clipboard!'));
+    }
+
+    /* check another */
+    function checkAnother() {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      document.getElementById('claim-input')?.focus();
+    }
+
+    /* load with default on page open */
+    showResult({ score: 82, label: 'Likely False', confidence: 88, reasons: ['Emotional language detected', 'No credible sources', 'Sensationalist headline', 'Unverified statistics'] });
+  </script>
+
+  </section>
+
+  <style>
+    :root {
+      --bg: #f5f4f0;
+      --surface: #ffffff;
+      --border: rgba(0,0,0,0.10);
+      --text: #1a1a1a;
+      --text-muted: #6b6b6b;
+      --accent: #d94f2b;
+      --accent-light: #fdf0ec;
+      --green: #1D9E75;
+      --green-light: #E1F5EE;
+      --yellow: #BA7517;
+      --yellow-light: #FAEEDA;
+      --red: #A32D2D;
+      --red-light: #FCEBEB;
+      --nav-h: 64px;
+    }
+    [data-theme="dark"] {
+      --bg: #111110;
+      --surface: #1c1c1a;
+      --border: rgba(255,255,255,0.09);
+      --text: #f0ede8;
+      --text-muted: #888884;
+      --accent: #e8623e;
+      --accent-light: #2a1810;
+      --green: #5DCAA5;
+      --green-light: #04342C;
+      --yellow: #EF9F27;
+      --yellow-light: #412402;
+      --red: #F09595;
+      --red-light: #501313;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      transition: background 0.3s, color 0.3s;
+      padding: 2rem 1.5rem 4rem;
+    }
+    nav {
+      position: sticky; top: 0; z-index: 100;
+      height: var(--nav-h);
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      display: flex; align-items: center;
+      justify-content: space-between;
+      padding: 0 2rem;
+      margin: -2rem -1.5rem 2rem;
+    }
+    .logo { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+    .logo-icon { width: 34px; height: 34px; background: var(--accent); border-radius: 8px; display: flex; align-items: center; justify-content: center; }
+    .logo-icon svg { width: 18px; height: 18px; fill: #fff; }
+    .logo-text { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.2rem; color: var(--text); letter-spacing: -0.02em; }
+    .logo-text span { color: var(--accent); }
+    .nav-right { display: flex; align-items: center; gap: 12px; }
+    .theme-toggle { width: 40px; height: 40px; border: 1px solid var(--border); border-radius: 10px; background: transparent; cursor: pointer; display: flex; align-items: center; justify-content: center; color: var(--text-muted); transition: background 0.15s; }
+    .theme-toggle:hover { background: var(--accent-light); color: var(--accent); }
+    .theme-toggle svg { width: 18px; height: 18px; }
+
+    /* ════════════════════════════════
+       EVIDENCE PANEL
+    ════════════════════════════════ */
+
+    .evidence-panel {
+      max-width: 680px;
+      margin: 2rem auto 0;
+      animation: fadeUp 0.4s ease both;
+    }
+
+    /* section header */
+    .panel-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1rem;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .panel-title {
+      font-family: 'Syne', sans-serif;
+      font-weight: 700;
+      font-size: 1.1rem;
+      letter-spacing: -0.02em;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .panel-title svg { width: 18px; height: 18px; fill: var(--accent); }
+    .panel-count {
+      font-size: 0.75rem;
+      font-weight: 500;
+      background: var(--accent-light);
+      color: var(--accent);
+      padding: 3px 10px;
+      border-radius: 20px;
+    }
+
+    /* filter tabs */
+    .filter-tabs {
+      display: flex;
+      gap: 6px;
+      margin-bottom: 1rem;
+      flex-wrap: wrap;
+    }
+    .tab {
+      font-size: 0.78rem;
+      font-weight: 500;
+      padding: 5px 14px;
+      border-radius: 20px;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .tab:hover { background: var(--accent-light); color: var(--accent); border-color: rgba(217,79,43,0.2); }
+    .tab.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+    /* evidence list */
+    .evidence-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    /* single evidence item */
+    .evidence-item {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 1rem 1.25rem;
+      display: flex;
+      gap: 1rem;
+      align-items: flex-start;
+      transition: border-color 0.15s, transform 0.15s;
+      animation: fadeUp 0.35s ease both;
+      cursor: pointer;
+    }
+    .evidence-item:hover {
+      border-color: var(--accent);
+      transform: translateX(3px);
+    }
+
+    /* left: source type icon */
+    .source-icon {
+      width: 38px;
+      height: 38px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    .source-icon svg { width: 18px; height: 18px; }
+    .icon-refutes  { background: var(--red-light);    color: var(--red); }
+    .icon-supports { background: var(--green-light);  color: var(--green); }
+    .icon-neutral  { background: var(--yellow-light); color: var(--yellow); }
+
+    /* right: content */
+    .source-content { flex: 1; min-width: 0; }
+    .source-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 4px;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .source-name {
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .source-verdict {
+      font-size: 0.72rem;
+      font-weight: 600;
+      padding: 2px 10px;
+      border-radius: 20px;
+      letter-spacing: 0.03em;
+    }
+    .verdict-refutes  { background: var(--red-light);    color: var(--red); }
+    .verdict-supports { background: var(--green-light);  color: var(--green); }
+    .verdict-neutral  { background: var(--yellow-light); color: var(--yellow); }
+
+    .source-title {
+      font-size: 0.9rem;
+      font-weight: 500;
+      color: var(--text);
+      line-height: 1.4;
+      margin-bottom: 4px;
+    }
+    .source-snippet {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      line-height: 1.5;
+      margin-bottom: 6px;
+    }
+    .source-meta {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 0.72rem;
+      color: var(--text-muted);
+    }
+    .source-meta span { display: flex; align-items: center; gap: 3px; }
+    .source-meta svg { width: 11px; height: 11px; fill: var(--text-muted); }
+    .source-link {
+      font-size: 0.72rem;
+      color: var(--accent);
+      font-weight: 500;
+      text-decoration: none;
+      margin-left: auto;
+    }
+    .source-link:hover { text-decoration: underline; }
+
+    /* credibility bar */
+    .cred-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 8px;
+    }
+    .cred-label { font-size: 0.7rem; color: var(--text-muted); white-space: nowrap; }
+    .cred-bar-bg {
+      flex: 1;
+      height: 4px;
+      background: var(--bg);
+      border-radius: 10px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+    }
+    .cred-bar-fill {
+      height: 100%;
+      border-radius: 10px;
+      transition: width 1s cubic-bezier(.4,0,.2,1);
+    }
+    .cred-pct { font-size: 0.7rem; font-weight: 600; color: var(--text); min-width: 28px; text-align: right; }
+
+    /* empty state */
+    .empty-state {
+      text-align: center;
+      padding: 2.5rem 1rem;
+      color: var(--text-muted);
+      font-size: 0.875rem;
+      border: 1.5px dashed var(--border);
+      border-radius: 14px;
+      display: none;
+    }
+    .empty-state.visible { display: block; }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(12px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    :root {
+      --bg: #f5f4f0;
+      --surface: #ffffff;
+      --border: rgba(0,0,0,0.10);
+      --text: #1a1a1a;
+      --text-muted: #6b6b6b;
+      --accent: #d94f2b;
+      --accent-light: #fdf0ec;
+      --green: #1D9E75;
+      --green-light: #E1F5EE;
+      --yellow: #BA7517;
+      --yellow-light: #FAEEDA;
+      --red: #A32D2D;
+      --red-light: #FCEBEB;
+      --nav-h: 64px;
+    }
+    [data-theme="dark"] {
+      --bg: #111110;
+      --surface: #1c1c1a;
+      --border: rgba(255,255,255,0.09);
+      --text: #f0ede8;
+      --text-muted: #888884;
+      --accent: #e8623e;
+      --accent-light: #2a1810;
+      --green: #5DCAA5;
+      --green-light: #04342C;
+      --yellow: #EF9F27;
+      --yellow-light: #412402;
+      --red: #F09595;
+      --red-light: #501313;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      transition: background 0.3s, color 0.3s;
+    }
+    nav {
+      position: sticky; top: 0; z-index: 100;
+      height: var(--nav-h);
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      display: flex; align-items: center;
+      justify-content: space-between;
+      padding: 0 2rem;
+    }
+    .logo { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+    .logo-icon { width: 34px; height: 34px; background: var(--accent); border-radius: 8px; display: flex; align-items: center; justify-content: center; }
+    .logo-icon svg { width: 18px; height: 18px; fill: #fff; }
+    .logo-text { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.2rem; color: var(--text); letter-spacing: -0.02em; }
+    .logo-text span { color: var(--accent); }
+    .nav-right { display: flex; align-items: center; gap: 12px; }
+    .theme-toggle { width: 40px; height: 40px; border: 1px solid var(--border); border-radius: 10px; background: transparent; cursor: pointer; display: flex; align-items: center; justify-content: center; color: var(--text-muted); transition: background 0.15s; }
+    .theme-toggle:hover { background: var(--accent-light); color: var(--accent); }
+    .theme-toggle svg { width: 18px; height: 18px; }
+
+    /* ════════════════════════════════
+       PAGE LAYOUT — sidebar + main
+    ════════════════════════════════ */
+    .page-layout {
+      display: grid;
+      grid-template-columns: 1fr 300px;
+      gap: 1.5rem;
+      max-width: 1100px;
+      margin: 2rem auto;
+      padding: 0 1.5rem;
+      align-items: start;
+    }
+    .main-col { min-width: 0; }
+
+    /* demo main content placeholder */
+    .demo-main {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 2rem;
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 0.875rem;
+      min-height: 300px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+    .demo-main h3 { font-family: 'Syne', sans-serif; color: var(--text); font-size: 1rem; }
+
+    /* ════════════════════════════════
+       HISTORY SIDEBAR
+    ════════════════════════════════ */
+    .history-sidebar {
+      position: sticky;
+      top: calc(var(--nav-h) + 1rem);
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      overflow: hidden;
+      animation: fadeUp 0.4s ease both;
+    }
+
+    /* sidebar header */
+    .sidebar-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1rem 1.25rem;
+      border-bottom: 1px solid var(--border);
+    }
+    .sidebar-title {
+      font-family: 'Syne', sans-serif;
+      font-weight: 700;
+      font-size: 0.95rem;
+      display: flex;
+      align-items: center;
+      gap: 7px;
+    }
+    .sidebar-title svg { width: 15px; height: 15px; fill: var(--accent); }
+    .clear-btn {
+      font-size: 0.72rem;
+      font-weight: 500;
+      color: var(--text-muted);
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      padding: 3px 8px;
+      border-radius: 6px;
+      transition: all 0.15s;
+    }
+    .clear-btn:hover { background: var(--red-light); color: var(--red); }
+
+    /* history list */
+    .history-list {
+      max-height: 480px;
+      overflow-y: auto;
+      scrollbar-width: thin;
+      scrollbar-color: var(--border) transparent;
+    }
+    .history-list::-webkit-scrollbar { width: 4px; }
+    .history-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+    /* single history item */
+    .history-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 0.85rem 1.25rem;
+      border-bottom: 1px solid var(--border);
+      cursor: pointer;
+      transition: background 0.15s;
+      animation: fadeUp 0.3s ease both;
+    }
+    .history-item:last-child { border-bottom: none; }
+    .history-item:hover { background: var(--bg); }
+
+    /* score dot */
+    .score-dot {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Syne', sans-serif;
+      font-weight: 800;
+      font-size: 0.8rem;
+      flex-shrink: 0;
+    }
+    .dot-false    { background: var(--red-light);    color: var(--red); }
+    .dot-uncertain{ background: var(--yellow-light); color: var(--yellow); }
+    .dot-true     { background: var(--green-light);  color: var(--green); }
+
+    /* item text */
+    .history-text { flex: 1; min-width: 0; }
+    .history-claim {
+      font-size: 0.8rem;
+      font-weight: 500;
+      color: var(--text);
+      line-height: 1.4;
+      margin-bottom: 3px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .history-meta {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 6px;
+    }
+    .history-label {
+      font-size: 0.68rem;
+      font-weight: 600;
+      padding: 1px 7px;
+      border-radius: 20px;
+      letter-spacing: 0.03em;
+    }
+    .label-false    { background: var(--red-light);    color: var(--red); }
+    .label-uncertain{ background: var(--yellow-light); color: var(--yellow); }
+    .label-true     { background: var(--green-light);  color: var(--green); }
+    .history-time {
+      font-size: 0.68rem;
+      color: var(--text-muted);
+      white-space: nowrap;
+    }
+
+    /* recheck arrow */
+    .recheck-icon {
+      width: 18px;
+      height: 18px;
+      opacity: 0;
+      transition: opacity 0.15s;
+      fill: var(--text-muted);
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+    .history-item:hover .recheck-icon { opacity: 1; }
+
+    /* empty state */
+    .sidebar-empty {
+      padding: 2rem 1.25rem;
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 0.8rem;
+      line-height: 1.6;
+    }
+    .sidebar-empty svg {
+      width: 32px; height: 32px;
+      fill: var(--border);
+      margin-bottom: 0.5rem;
+      display: block;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    /* sidebar footer */
+    .sidebar-footer {
+      padding: 0.75rem 1.25rem;
+      border-top: 1px solid var(--border);
+      background: var(--bg);
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      text-align: center;
+    }
+
+    /* mobile: sidebar goes below main */
+    @media (max-width: 768px) {
+      .page-layout {
+        grid-template-columns: 1fr;
+      }
+      .history-sidebar {
+        position: static;
+      }
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(12px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+
+    <!-- ══════════════════════════════════
+         HISTORY SIDEBAR — copy from here
+    ══════════════════════════════════ -->
+    <aside class="history-sidebar" id="historySidebar">
+
+      <div class="sidebar-header">
+        <div class="sidebar-title">
+          <svg viewBox="0 0 24 24"><path d="M13 3c-4.97 0-9 4.03-9 9H1l3.89 3.89.07.14L9 12H6c0-3.87 3.13-7 7-7s7 3.13 7 7-3.13 7-7 7c-1.93 0-3.68-.79-4.94-2.06l-1.42 1.42C8.27 19.99 10.51 21 13 21c4.97 0 9-4.03 9-9s-4.03-9-9-9zm-1 5v5l4.28 2.54.72-1.21-3.5-2.08V8H12z"/></svg>
+          Recent Checks
+        </div>
+        <button class="clear-btn" onclick="clearHistory()">Clear all</button>
+      </div>
+
+      <div class="history-list" id="historyList"></div>
+
+      <div class="sidebar-footer" id="sidebarFooter"></div>
+
+    </aside>
+    <!-- END HISTORY SIDEBAR -->
+
+  </div>
+
+  <script>
+
+    /* ════════════════════════════════
+       HISTORY FUNCTIONS
+       Call addToHistory() after every
+       successful API check
+    ════════════════════════════════ */
+
+    function getHistory() {
+      return JSON.parse(localStorage.getItem('rg-history') || '[]');
+    }
+
+    function saveHistory(history) {
+      localStorage.setItem('rg-history', JSON.stringify(history));
+    }
+
+    /* add a new item — call this after checkClaim() succeeds */
+    function addToHistory(claim, score, label) {
+      const history = getHistory();
+      history.unshift({ claim, score, label, time: Date.now() });
+      saveHistory(history.slice(0, 10)); // keep last 10
+      renderHistory();
+    }
+
+    function clearHistory() {
+      if (confirm('Clear all recent checks?')) {
+        localStorage.removeItem('rg-history');
+        renderHistory();
+      }
+    }
+
+    function timeAgo(ts) {
+      const diff = Math.floor((Date.now() - ts) / 1000);
+      if (diff < 60)  return 'just now';
+      if (diff < 3600) return Math.floor(diff / 60) + 'm ago';
+      if (diff < 86400) return Math.floor(diff / 3600) + 'h ago';
+      return Math.floor(diff / 86400) + 'd ago';
+    }
+
+    function getTheme(label) {
+      if (!label) return 'uncertain';
+      const l = label.toLowerCase();
+      if (l.includes('false')) return 'false';
+      if (l.includes('true'))  return 'true';
+      return 'uncertain';
+    }
+
+    function renderHistory() {
+      const list    = document.getElementById('historyList');
+      const footer  = document.getElementById('sidebarFooter');
+      const history = getHistory();
+
+      if (!history.length) {
+        list.innerHTML = `
+          <div class="sidebar-empty">
+            <svg viewBox="0 0 24 24"><path d="M13 3c-4.97 0-9 4.03-9 9H1l3.89 3.89.07.14L9 12H6c0-3.87 3.13-7 7-7s7 3.13 7 7-3.13 7-7 7c-1.93 0-3.68-.79-4.94-2.06l-1.42 1.42C8.27 19.99 10.51 21 13 21c4.97 0 9-4.03 9-9s-4.03-9-9-9z"/></svg>
+            No checks yet.<br/>Check a claim to see your history here.
+          </div>`;
+        footer.textContent = '';
+        return;
+      }
+
+      list.innerHTML = '';
+      history.forEach((item, i) => {
+        const theme = getTheme(item.label);
+        const labelMap = { false: 'Likely False', true: 'Likely True', uncertain: 'Uncertain' };
+
+        const el = document.createElement('div');
+        el.className = 'history-item';
+        el.style.animationDelay = (i * 0.05) + 's';
+        el.innerHTML = `
+          <div class="score-dot dot-${theme}">${item.score ?? '?'}</div>
+          <div class="history-text">
+            <div class="history-claim" title="${item.claim}">${item.claim}</div>
+            <div class="history-meta">
+              <span class="history-label label-${theme}">${item.label || labelMap[theme]}</span>
+              <span class="history-time">${timeAgo(item.time)}</span>
+            </div>
+          </div>
+          <svg class="recheck-icon" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+        `;
+
+        /* click to recheck */
+        el.addEventListener('click', () => {
+          const input = document.getElementById('claim-input');
+          if (input) {
+            input.value = item.claim;
+            input.dispatchEvent(new Event('input'));
+            input.focus();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+          }
+        });
+
+        list.appendChild(el);
+      });
+
+      footer.textContent = `${history.length} of 10 checks stored locally`;
+    }
+
+    /* ── render on load ── */
+    renderHistory();
+
+    /* ── demo simulate button ── */
+    const demoItems = [
+      { claim: '5G towers cause cancer and brain damage', score: 87, label: 'Likely False' },
+      { claim: 'NASA confirms water found on the moon', score: 14, label: 'Likely True' },
+      { claim: 'New study links coffee to longer lifespan', score: 45, label: 'Uncertain' },
+      { claim: 'Vaccines contain microchips for tracking', score: 95, label: 'Likely False' },
+      { claim: 'WHO declares new health emergency in Asia', score: 38, label: 'Uncertain' },
+    ];
+    let demoIndex = 0;
+    function addDemoItem() {
+      const item = demoItems[demoIndex % demoItems.length];
+      addToHistory(item.claim, item.score, item.label);
+      demoIndex++;
+    }
+  </script>
+
+  <!-- ══════════════════════════════════
+       EVIDENCE PANEL — copy from here
+  ══════════════════════════════════ -->
+  <div class="evidence-panel" id="evidencePanel">
+
+    <div class="panel-header">
+      <div class="panel-title">
+        <svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+        Evidence &amp; Sources
+      </div>
+      <span class="panel-count" id="sourceCount">4 sources found</span>
+    </div>
+
+    <!-- filter tabs -->
+    <div class="filter-tabs">
+      <button class="tab active" onclick="filterSources('all', this)">All</button>
+      <button class="tab" onclick="filterSources('refutes', this)">Refutes claim</button>
+      <button class="tab" onclick="filterSources('supports', this)">Supports claim</button>
+      <button class="tab" onclick="filterSources('neutral', this)">Neutral</button>
+    </div>
+
+    <!-- list -->
+    <div class="evidence-list" id="evidenceList"></div>
+    <div class="empty-state" id="emptyState">No sources found for this filter.</div>
+
+  </div>
+  <!-- END EVIDENCE PANEL -->
+
+  <script>
+
+    /* ════════════════════════════════
+       showEvidence(sources) — call
+       this with your API response
+    ════════════════════════════════ */
+    let allSources = [];
+
+    function showEvidence(sources) {
+      allSources = sources;
+      renderSources(sources);
+      document.getElementById('sourceCount').textContent = sources.length + ' sources found';
+    }
+
+    function renderSources(sources) {
+      const list = document.getElementById('evidenceList');
+      const empty = document.getElementById('emptyState');
+      list.innerHTML = '';
+
+      if (!sources.length) {
+        empty.classList.add('visible');
+        return;
+      }
+      empty.classList.remove('visible');
+
+      sources.forEach((src, i) => {
+        const type = src.type || 'neutral'; // 'refutes' | 'supports' | 'neutral'
+        const cred = src.credibility || 70;
+
+        /* icon SVG per type */
+        const icons = {
+          refutes:  `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>`,
+          supports: `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>`,
+          neutral:  `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>`
+        };
+        const verdictLabel = { refutes: 'Refutes', supports: 'Supports', neutral: 'Neutral' };
+        const credColor = cred >= 75 ? 'var(--green)' : cred >= 50 ? 'var(--yellow)' : 'var(--red)';
+
+        const item = document.createElement('div');
+        item.className = 'evidence-item';
+        item.dataset.type = type;
+        item.style.animationDelay = (i * 0.08) + 's';
+        item.innerHTML = `
+          <div class="source-icon icon-${type}">${icons[type]}</div>
+          <div class="source-content">
+            <div class="source-top">
+              <span class="source-name">${src.source || 'Unknown Source'}</span>
+              <span class="source-verdict verdict-${type}">${verdictLabel[type]}</span>
+            </div>
+            <div class="source-title">${src.title || 'No title available'}</div>
+            <div class="source-snippet">${src.snippet || ''}</div>
+            <div class="source-meta">
+              <span>
+                <svg viewBox="0 0 24 24"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zm4.24 16L12 15.45 7.77 18l1.12-4.81-3.73-3.23 4.92-.42L12 5l1.92 4.53 4.92.42-3.73 3.23L16.23 18z"/></svg>
+                ${src.date || 'Recently'}
+              </span>
+              ${src.url ? `<a class="source-link" href="${src.url}" target="_blank">View source →</a>` : ''}
+            </div>
+            <div class="cred-row">
+              <span class="cred-label">Credibility</span>
+              <div class="cred-bar-bg">
+                <div class="cred-bar-fill" style="width:0%; background:${credColor}" data-width="${cred}%"></div>
+              </div>
+              <span class="cred-pct">${cred}%</span>
+            </div>
+          </div>
+        `;
+        list.appendChild(item);
+
+        /* animate credibility bars */
+        setTimeout(() => {
+          item.querySelector('.cred-bar-fill').style.width = cred + '%';
+        }, 100 + i * 80);
+      });
+    }
+
+    function filterSources(type, btn) {
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      btn.classList.add('active');
+      const filtered = type === 'all' ? allSources : allSources.filter(s => s.type === type);
+      renderSources(filtered);
+    }
+
+    /* ── Demo data (replace with real API response) ── */
+    showEvidence([
+      {
+        type: 'refutes',
+        source: 'Reuters Fact Check',
+        title: 'No evidence that 5G networks cause illness in humans',
+        snippet: 'Health authorities worldwide have found no credible scientific evidence linking 5G radio waves to any disease.',
+        date: '2 days ago',
+        credibility: 94,
+        url: '#'
+      },
+      {
+        type: 'refutes',
+        source: 'WHO',
+        title: 'WHO statement: 5G mobile networks and health',
+        snippet: 'Based on current assessment of the evidence, no adverse health effect has been causally linked with 5G exposure.',
+        date: '1 week ago',
+        credibility: 98,
+        url: '#'
+      },
+      {
+        type: 'neutral',
+        source: 'Science Daily',
+        title: 'Ongoing studies into electromagnetic field effects',
+        snippet: 'Researchers continue to monitor electromagnetic exposure levels in urban areas as 5G rollout expands globally.',
+        date: '3 weeks ago',
+        credibility: 72,
+        url: '#'
+      },
+      {
+        type: 'supports',
+        source: 'Unknown Blog',
+        title: 'Community reports of headaches near 5G towers',
+        snippet: 'Several unverified community posts have claimed health issues near newly installed 5G infrastructure.',
+        date: '5 days ago',
+        credibility: 18,
+        url: '#'
+      }
+    ]);
+  </script>
+
+  <script>
+    // ── Dark mode ──
+    const toggle = document.getElementById('themeToggle');
+    const sun = document.getElementById('icon-sun');
+    const moon = document.getElementById('icon-moon');
+    const html = document.documentElement;
+    const saved = localStorage.getItem('rg-theme') || 'light';
+    html.setAttribute('data-theme', saved);
+    sun.style.display = saved === 'dark' ? 'block' : 'none';
+    moon.style.display = saved === 'dark' ? 'none' : 'block';
+    toggle.addEventListener('click', () => {
+      const next = html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+      html.setAttribute('data-theme', next);
+      localStorage.setItem('rg-theme', next);
+      sun.style.display = next === 'dark' ? 'block' : 'none';
+      moon.style.display = next === 'dark' ? 'none' : 'block';
+    });
+
+    // ── Char counter ──
+    const textarea = document.getElementById('claim-input');
+    const charCount = document.getElementById('charCount');
+    textarea.addEventListener('input', () => {
+      const len = textarea.value.length;
+      charCount.textContent = `${len} / 600`;
+      charCount.className = 'char-count' + (len > 500 ? ' warn' : '') + (len >= 600 ? ' over' : '');
+    });
+
+    // ── Example chips ──
+    function fillExample(el) {
+      const text = el.textContent.replace(' →', '');
+      if (text === 'Try an example') return;
+      textarea.value = text;
+      textarea.dispatchEvent(new Event('input'));
+      textarea.focus();
+    }
+
+    // ── Check Claim — wired to backend ──
+    async function checkClaim() {
+      const claim = textarea.value.trim();
+      if (!claim) {
+        textarea.focus();
+        textarea.style.border = '1.5px solid var(--accent)';
+        setTimeout(() => textarea.style.border = '', 1000);
+        return;
+      }
+
+      // Show loading state
+      const btn = document.getElementById('checkBtn');
+      const spinner = document.getElementById('spinner');
+      const btnIcon = document.getElementById('btnIcon');
+      const btnText = document.getElementById('btnText');
+      btn.disabled = true;
+      spinner.style.display = 'block';
+      btnIcon.style.display = 'none';
+      btnText.textContent = 'Checking...';
+
+      try {
+        // ── BACKEND CALL ──
+        // Replace the URL below with your actual backend endpoint
+        // Expected response: { score: 73, label: "Likely False", reasons: ["..."] }
+        const response = await fetch('http://localhost:5000/api/check', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ claim })
+        });
+
+        if (!response.ok) throw new Error('Server error');
+        const data = await response.json();
+
+        // Show result slot (Component 3 will replace this)
+        const slot = document.getElementById('resultSlot');
+        slot.classList.add('visible');
+        slot.textContent = `✅ Got result: score=${data.score}, label="${data.label}" — Component 3 will display this nicely!`;
+
+        // Store to history (Component 5 will read this)
+        const history = JSON.parse(localStorage.getItem('rg-history') || '[]');
+        history.unshift({ claim, score: data.score, label: data.label, time: Date.now() });
+        localStorage.setItem('rg-history', JSON.stringify(history.slice(0, 10)));
+
+      } catch (err) {
+        // ── MOCK DATA (use this while backend isn't ready) ──
+        const mockData = { score: 78, label: 'Likely False', reasons: ['Emotional language detected', 'No credible sources found'] };
+        const slot = document.getElementById('resultSlot');
+        slot.classList.add('visible');
+        slot.textContent = `[Mock] score=${mockData.score}, label="${mockData.label}" — replace with real API when ready`;
+      } finally {
+        btn.disabled = false;
+        spinner.style.display = 'none';
+        btnIcon.style.display = 'block';
+        btnText.textContent = 'Check Claim';
+      }
+    }
+
+    // Allow Ctrl+Enter to submit
+    textarea.addEventListener('keydown', (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') checkClaim();
+    });
+  </script>
+
+</body>
+</html>
