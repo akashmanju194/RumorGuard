@@ -1,16 +1,19 @@
 <!DOCTYPE html>
 <html lang="en" data-theme="light">
+
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>RumorGuard - AI Fact Checker</title>
-  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet"/>
-  
+  <link
+    href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@400;500;600&display=swap"
+    rel="stylesheet" />
+
   <style>
     :root {
       --bg: #f5f4f0;
       --surface: #ffffff;
-      --border: rgba(0,0,0,0.10);
+      --border: rgba(0, 0, 0, 0.10);
       --text: #1a1a1a;
       --text-muted: #6b6b6b;
       --accent: #d94f2b;
@@ -27,7 +30,7 @@
     [data-theme="dark"] {
       --bg: #111110;
       --surface: #1c1c1a;
-      --border: rgba(255,255,255,0.09);
+      --border: rgba(255, 255, 255, 0.09);
       --text: #f0ede8;
       --text-muted: #888884;
       --accent: #e8623e;
@@ -41,7 +44,12 @@
       --red-light: #501313;
     }
 
-    * { box-sizing: border-box; margin: 0; padding: 0; }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
     body {
       font-family: 'DM Sans', sans-serif;
       background: var(--bg);
@@ -52,34 +60,46 @@
 
     /* Navbar */
     nav {
-      position: sticky; top: 0; z-index: 100;
+      position: sticky;
+      top: 0;
+      z-index: 100;
       height: 64px;
       background: var(--surface);
       border-bottom: 1px solid var(--border);
-      display: flex; 
+      display: flex;
       align-items: center;
       justify-content: space-between;
       padding: 0 2rem;
     }
 
     .logo {
-      display: flex; align-items: center; gap: 10px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
       text-decoration: none;
       color: var(--text);
     }
+
     .logo-icon {
-      width: 34px; height: 34px;
+      width: 34px;
+      height: 34px;
       background: var(--accent);
       border-radius: 8px;
-      display: flex; align-items: center; justify-content: center;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
+
     .logo-text {
       font-family: 'Syne', sans-serif;
       font-weight: 800;
       font-size: 1.25rem;
       letter-spacing: -0.02em;
     }
-    .logo-text span { color: var(--accent); }
+
+    .logo-text span {
+      color: var(--accent);
+    }
 
     .nav-links {
       display: flex;
@@ -87,6 +107,7 @@
       gap: 8px;
       list-style: none;
     }
+
     .nav-links a {
       text-decoration: none;
       color: var(--text-muted);
@@ -95,6 +116,7 @@
       border-radius: 10px;
       transition: all 0.2s;
     }
+
     .nav-links a:hover,
     .nav-links a.active {
       background: var(--accent-light);
@@ -121,7 +143,7 @@
       font-weight: 500;
       color: var(--accent);
       background: var(--accent-light);
-      border: 1px solid rgba(217,79,43,0.2);
+      border: 1px solid rgba(217, 79, 43, 0.2);
       padding: 6px 16px;
       border-radius: 9999px;
       margin-bottom: 1.5rem;
@@ -136,15 +158,21 @@
       max-width: 720px;
       margin-bottom: 1.25rem;
     }
-    .hero h1 .highlight { color: var(--accent); }
+
+    .hero h1 .highlight {
+      color: var(--accent);
+    }
+
     .hero h1 .strike {
       position: relative;
       color: var(--text-muted);
     }
+
     .hero h1 .strike::after {
       content: '';
       position: absolute;
-      left: 0; right: 0;
+      left: 0;
+      right: 0;
       top: 50%;
       height: 4px;
       background: var(--accent);
@@ -166,12 +194,13 @@
       border: 1.5px solid var(--border);
       border-radius: 20px;
       padding: 1.5rem;
-      box-shadow: 0 10px 40px rgba(0,0,0,0.08);
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
       transition: all 0.3s;
     }
+
     .search-box:focus-within {
       border-color: var(--accent);
-      box-shadow: 0 10px 50px rgba(217,79,43,0.15);
+      box-shadow: 0 10px 50px rgba(217, 79, 43, 0.15);
     }
 
     .search-label {
@@ -210,6 +239,7 @@
       gap: 8px;
       flex-wrap: wrap;
     }
+
     .chip {
       font-size: 0.8rem;
       padding: 5px 12px;
@@ -219,6 +249,7 @@
       cursor: pointer;
       transition: all 0.2s;
     }
+
     .chip:hover {
       background: var(--accent-light);
       color: var(--accent);
@@ -238,20 +269,32 @@
       gap: 8px;
       transition: all 0.2s;
     }
-    .btn-check:hover { background: var(--accent-hover); transform: translateY(-1px); }
-    .btn-check:disabled { opacity: 0.6; cursor: not-allowed; }
+
+    .btn-check:hover {
+      background: var(--accent-hover);
+      transform: translateY(-1px);
+    }
+
+    .btn-check:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
 
     .spinner {
       width: 18px;
       height: 18px;
-      border: 2px solid rgba(255,255,255,0.3);
+      border: 2px solid rgba(255, 255, 255, 0.3);
       border-top-color: white;
       border-radius: 50%;
       animation: spin 0.8s linear infinite;
       display: none;
     }
 
-    @keyframes spin { to { transform: rotate(360deg); } }
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
 
     /* Result Card */
     .result-card {
@@ -261,7 +304,7 @@
       border: 1.5px solid var(--border);
       border-radius: 20px;
       overflow: hidden;
-      box-shadow: 0 10px 40px rgba(0,0,0,0.08);
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
     }
 
     .top-strip {
@@ -286,12 +329,19 @@
       height: 120px;
       flex-shrink: 0;
     }
+
     .gauge-wrap svg {
       width: 120px;
       height: 120px;
       transform: rotate(-90deg);
     }
-    .gauge-bg { fill: none; stroke: var(--border); stroke-width: 10; }
+
+    .gauge-bg {
+      fill: none;
+      stroke: var(--border);
+      stroke-width: 10;
+    }
+
     .gauge-fill {
       fill: none;
       stroke-width: 10;
@@ -309,6 +359,7 @@
       align-items: center;
       justify-content: center;
     }
+
     .gauge-number {
       font-family: 'Syne', sans-serif;
       font-size: 2.2rem;
@@ -346,6 +397,7 @@
       gap: 10px;
       margin: 1.5rem 0;
     }
+
     .reason-tag {
       background: var(--bg);
       border: 1px solid var(--border);
@@ -364,20 +416,48 @@
       overflow: hidden;
       border: 1px solid var(--border);
     }
+
     .conf-bar-fill {
       height: 100%;
       transition: width 1.2s ease;
     }
 
     /* Theme Colors */
-    .theme-false .top-strip, .theme-false .gauge-fill, .theme-false .verdict-badge { background: var(--red); color: white; }
-    .theme-false .gauge-number, .theme-false .verdict-title { color: var(--red); }
+    .theme-false .top-strip,
+    .theme-false .gauge-fill,
+    .theme-false .verdict-badge {
+      background: var(--red);
+      color: white;
+    }
 
-    .theme-true .top-strip, .theme-true .gauge-fill, .theme-true .verdict-badge { background: var(--green); color: white; }
-    .theme-true .gauge-number, .theme-true .verdict-title { color: var(--green); }
+    .theme-false .gauge-number,
+    .theme-false .verdict-title {
+      color: var(--red);
+    }
 
-    .theme-uncertain .top-strip, .theme-uncertain .gauge-fill, .theme-uncertain .verdict-badge { background: var(--yellow); color: white; }
-    .theme-uncertain .gauge-number, .theme-uncertain .verdict-title { color: var(--yellow); }
+    .theme-true .top-strip,
+    .theme-true .gauge-fill,
+    .theme-true .verdict-badge {
+      background: var(--green);
+      color: white;
+    }
+
+    .theme-true .gauge-number,
+    .theme-true .verdict-title {
+      color: var(--green);
+    }
+
+    .theme-uncertain .top-strip,
+    .theme-uncertain .gauge-fill,
+    .theme-uncertain .verdict-badge {
+      background: var(--yellow);
+      color: white;
+    }
+
+    .theme-uncertain .gauge-number,
+    .theme-uncertain .verdict-title {
+      color: var(--yellow);
+    }
 
     .card-footer {
       padding: 1.25rem 2rem;
@@ -398,19 +478,23 @@
       cursor: pointer;
       transition: all 0.2s;
     }
+
     .action-btn:hover {
       background: var(--accent-light);
       color: var(--accent);
     }
   </style>
 </head>
+
 <body>
 
   <!-- ==================== NAVBAR ==================== -->
   <nav>
     <a href="#" class="logo">
       <div class="logo-icon">
-        <svg viewBox="0 0 24 24" fill="white"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>
+        <svg viewBox="0 0 24 24" fill="white">
+          <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z" />
+        </svg>
       </div>
       <span class="logo-text">Rumor<span>Guard</span></span>
     </a>
@@ -419,23 +503,24 @@
       <li><a href="#" class="active">Check Claim</a></li>
       <li><a href="#">How It Works</a></li>
       <li><a href="#">Recent Checks</a></li>
-      <li><a href="#">About Us</a></li>   <!-- ← Added Here -->
+      <li><a href="#">About Us</a></li> <!-- ← Added Here -->
     </ul>
 
     <div>
-      <button id="themeToggle" style="background:none; border:none; cursor:pointer; font-size:1.4rem; padding:8px;">🌓</button>
+      <button id="themeToggle"
+        style="background:none; border:none; cursor:pointer; font-size:1.4rem; padding:8px;">🌓</button>
     </div>
   </nav>
 
   <!-- ==================== HERO + INPUT ==================== -->
   <section class="hero">
     <div class="hero-badge">🔍 AI-powered • Real-time Fact Checking</div>
-    
+
     <h1>
-      Kill the <span class="strike">rumor</span><br/>
+      Kill the <span class="strike">rumor</span><br />
       before it kills <span class="highlight">trust.</span>
     </h1>
-    
+
     <p class="hero-sub">
       Paste any claim, headline, or message.<br>
       Our AI will analyze it and tell you if it's true or fake.
@@ -443,7 +528,7 @@
 
     <div class="search-box">
       <span class="search-label">Enter the rumor or claim</span>
-      <textarea id="claim-input" class="search-textarea" maxlength="600" 
+      <textarea id="claim-input" class="search-textarea" maxlength="600"
         placeholder='e.g. "Drinking coffee every day permanently cures cancer..."'></textarea>
 
       <div class="search-footer">
@@ -465,13 +550,13 @@
   <div class="result-card" id="resultCard" style="display: none;">
     <!-- ... (Result card content remains same as previous version) ... -->
     <div class="top-strip" id="topStrip"></div>
-    
+
     <div class="card-body">
       <div class="score-row">
         <div class="gauge-wrap">
           <svg viewBox="0 0 100 100">
-            <circle class="gauge-bg" cx="50" cy="50" r="45"/>
-            <circle class="gauge-fill" id="gaugeFill" cx="50" cy="50" r="45"/>
+            <circle class="gauge-bg" cx="50" cy="50" r="45" />
+            <circle class="gauge-fill" id="gaugeFill" cx="50" cy="50" r="45" />
           </svg>
           <div class="gauge-label">
             <span class="gauge-number" id="gaugeNumber">82</span>
@@ -538,7 +623,7 @@
     async function checkClaim() {
       const input = document.getElementById('claim-input');
       const claim = input.value.trim();
-      
+
       if (!claim) {
         input.style.border = "2px solid var(--accent)";
         setTimeout(() => input.style.border = "", 1500);
@@ -554,22 +639,47 @@
       btnText.textContent = 'Analyzing...';
 
       try {
-        await new Promise(resolve => setTimeout(resolve, 1600));
+        const response = await fetch("http://127.0.0.1:8000/analyze", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ text: claim, url: "" })
+        });
 
-        const mockResponses = [
-          { score: 82, label: "Likely False", confidence: 88, 
-            desc: "High emotional language and sensationalism detected. No credible sources support this claim." },
-          { score: 18, label: "Likely True", confidence: 91, 
-            desc: "Multiple credible sources confirm this information." },
-          { score: 55, label: "Uncertain", confidence: 64, 
-            desc: "Mixed signals detected. More context is needed." }
-        ];
+        if (!response.ok) {
+          throw new Error("API error");
+        }
 
-        const result = mockResponses[Math.floor(Math.random() * mockResponses.length)];
+        const data = await response.json();
+        if (data.error) {
+          alert("Error: " + data.error);
+          return;
+        }
+
+        const aiLines = data.ai_analysis.split('\n');
+        let label = "Uncertain";
+        let desc = "Analysis complete.";
+        let confidence = 50;
+
+        for (let line of aiLines) {
+          if (line.startsWith("Verdict:")) label = line.replace("Verdict:", "").trim();
+          if (line.startsWith("Reason:")) desc = line.replace("Reason:", "").trim();
+          if (line.startsWith("Confidence:")) confidence = parseInt(line.replace("Confidence:", "").trim() || "50");
+        }
+
+        // Backend score is 100 for True, 0 for Fake. The UI expects a "Risk Score" (0-100 where 100 is highest risk).
+        let riskScore = 100 - Math.round(data.score || 0);
+
+        const result = {
+          score: riskScore,
+          label: label,
+          confidence: confidence,
+          desc: desc
+        };
+
         showResult(result);
-        
+
       } catch (e) {
-        alert("Something went wrong. Please try again.");
+        alert("Something went wrong or the backend is not running. Please start the backend and try again.");
       } finally {
         btn.disabled = false;
         spinner.style.display = 'none';
@@ -593,10 +703,10 @@
 
       document.getElementById('gaugeNumber').textContent = data.score;
       document.getElementById('verdictLabel').textContent = data.label.toUpperCase();
-      document.getElementById('verdictTitle').textContent = 
+      document.getElementById('verdictTitle').textContent =
         data.label.includes("False") ? "This claim appears false" :
-        data.label.includes("True") ? "This claim appears credible" : "Verdict is uncertain";
-      
+          data.label.includes("True") ? "This claim appears credible" : "Verdict is uncertain";
+
       document.getElementById('verdictDesc').textContent = data.desc;
       document.getElementById('confValue').textContent = data.confidence + "%";
       document.getElementById('confBar').style.width = data.confidence + "%";
@@ -624,4 +734,5 @@
     });
   </script>
 </body>
+
 </html>
