@@ -33,10 +33,30 @@ def save_check(claim, verdict, confidence):
 
 # --- AI LOGIC ---
 def query_model(payload):
-    """Calls the HuggingFace Inference API"""
-    response = requests.post(API_URL, headers=headers, json=payload)
-    # If the model is loading, HuggingFace returns an 'estimated_time'
-    return response.json()
+    """Calls the HuggingFace Inference API with error handling"""
+    try:
+        # Added a timeout so the app doesn't hang forever
+        response = requests.post(API_URL, headers=headers, json=payload, timeout=20)
+        
+        # Check if the request was successful
+        if response.status_code == 200:
+            return response.json()
+        
+        # 503 means the model is "waking up" on HuggingFace servers
+        elif response.status_code == 503:
+            return {"error": "The AI model is currently waking up. Please try again in 20-30 seconds."}
+        
+        # 401 means your HF_TOKEN is likely wrong or missing
+        elif response.status_code == 401:
+            return {"error": "Invalid API Token. Check your Streamlit Secrets."}
+            
+        else:
+            return {"error": f"API Error {response.status_code}: {response.text}"}
+            
+    except requests.exceptions.JSONDecodeError:
+        return {"error": "Received an invalid response from the AI engine. It might be rebooting."}
+    except requests.exceptions.RequestException as e:
+        return {"error": f"Connection failed: {str(e)}"}
 
 
 
