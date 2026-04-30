@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RumorGuard - AI Fact Checker</title>
+    <link rel="stylesheet" href="style.css"> 
+    <style>
+        /* Ensuring the result card is hidden by default */
+        #resultCard { display: none; margin-top: 20px; padding: 20px; border-radius: 10px; background: #f9f9f9; border: 1px solid #ddd; }
+        .spinner { display: none; width: 12px; height: 12px; border: 2px solid #fff; border-top: 2px solid transparent; border-radius: 50%; animation: spin 1s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>before it kills <strong>trust.</strong></h1>
+        <p>Paste any claim, headline, or message. Our AI will analyze it and tell you if it's true or fake.</p>
+
+        <div class="search-box">
+            <span class="search-label">ENTER THE RUMOR OR CLAIM</span>
+            <textarea id="claim-input" class="search-textarea" placeholder='e.g. "Drinking coffee every day permanently cures cancer..."'></textarea>
+
+            <div class="search-footer">
+                <div class="chips">
+                    <span class="chip" onclick="fillExample(this)">5G causes disease</span>
+                    <span class="chip" onclick="fillExample(this)">Vaccines contain microchips</span>
+                    <span class="chip" onclick="fillExample(this)">Coffee cures cancer</span>
+                </div>
+
+                <button type="button" class="btn-check" id="checkBtn" onclick="checkClaim(event)">
+                    <span class="spinner" id="spinner"></span>
+                    <span id="btnText">Check Claim</span>
+                </button>
+            </div>
+        </div>
+
+        <div id="resultCard" class="result-card">
+            <h2>Analysis Result</h2>
+            <div class="gauge-container">
+                <div class="score-display">Score: <span id="gaugeNumber">0</span>/100</div>
+            </div>
+            <p id="verdictDesc">The analysis will appear here...</p>
+            <button type="button" onclick="location.reload()">Check Another</button>
+        </div>
+    </div>
+
+    <script>
+        // Use your actual FastAPI address
+        const API_BASE_URL = "http://127.0.0.1:8000";
+
+        // Corrected async function
+        async function checkClaim(event) {
+            // 1. HARD STOP for the page refresh
+            if (event) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
+
+            const input = document.getElementById('claim-input');
+            const claim = input.value.trim();
+            if (!claim) return false;
+
+            const btn = document.getElementById('checkBtn');
+            const btnText = document.getElementById('btnText');
+            const spinner = document.getElementById('spinner');
+
+            // Set loading state
+            btn.disabled = true;
+            spinner.style.display = 'inline-block';
+            btnText.textContent = 'Analyzing...';
+
+            try {
+                // 2. BACKTICK FIX: Using ` ` instead of ' '
+                const response = await fetch(`${API_BASE_URL}/analyze`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ text: claim })
+                });
+
+                if (!response.ok) throw new Error("Backend server error");
+
+                const data = await response.json();
+                
+                // 3. SHOW AND HOLD: This makes the result stay on screen
+                showResult(data);
+
+            } catch (error) {
+                console.error("Error details:", error);
+                alert("Cannot connect to AI. Is your FastAPI terminal running?");
+            } finally {
+                btn.disabled = false;
+                spinner.style.display = 'none';
+                btnText.textContent = 'Check Claim';
+            }
+
+            return false; // Final guard against refresh
+        }
+
+        function fillExample(el) {
+            document.getElementById('claim-input').value = el.textContent;
+        }
+
+        function showResult(data) {
+            const card = document.getElementById('resultCard');
+            
+            // Force the card to stay visible
+            card.style.display = 'block'; 
+            
+            document.getElementById('gaugeNumber').textContent = data.score;
+            document.getElementById('verdictDesc').textContent = data.ai_analysis;
+
+            // Smooth scroll so the user sees the result
+            card.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // Handle Ctrl+Enter to check claim
+        document.getElementById('claim-input').addEventListener('keydown', (e) => {
+            if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+                e.preventDefault();
+                checkClaim(e);
+            }
+        });
+    </script>
+</body>
+</html>

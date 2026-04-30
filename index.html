@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>RumorGuard - AI Fact Checker</title>
   <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet"/>
-  
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
   <style>
     :root {
       --bg: #f5f4f0;
@@ -452,10 +452,11 @@
           <span class="chip" onclick="fillExample(this)">Vaccines contain microchips</span>
           <span class="chip" onclick="fillExample(this)">Coffee cures cancer</span>
         </div>
-
-        <button class="btn-check" id="checkBtn" onclick="checkClaim()">
-          <span class="spinner" id="spinner"></span>
-          <span id="btnText">Check Claim</span>
+      <button type="button" class="btn-check" id="checkBtn" onclick="checkClaim(event)">
+        <span class="spinner" id="spinner"></span>
+        <span id="btnText">Check Claim</span>
+      </button>
+   
         </button>
       </div>
     </div>
@@ -518,110 +519,60 @@
     </div>
   </div>
 
-  <script>
-    // Dark Mode
-    const toggle = document.getElementById('themeToggle');
-    toggle.addEventListener('click', () => {
-      const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
-      document.documentElement.setAttribute('data-theme', isDark ? 'light' : 'dark');
-      localStorage.setItem('theme', isDark ? 'light' : 'dark');
-    });
+<script>
+    const API_BASE_URL = "http://127.0.0.1:8000";
 
-    if (localStorage.getItem('theme') === 'dark') {
-      document.documentElement.setAttribute('data-theme', 'dark');
-    }
+    // This function MUST be async to use 'await'
+    async function checkClaim(event) {
+        // Stop the "flash" / page reload
+        if (event) event.preventDefault();
 
-    function fillExample(el) {
-      document.getElementById('claim-input').value = el.textContent;
-    }
+        const input = document.getElementById('claim-input');
+        const claim = input.value.trim();
+        if (!claim) return;
 
-    async function checkClaim() {
-      const input = document.getElementById('claim-input');
-      const claim = input.value.trim();
-      
-      if (!claim) {
-        input.style.border = "2px solid var(--accent)";
-        setTimeout(() => input.style.border = "", 1500);
-        return;
-      }
-
-      const btn = document.getElementById('checkBtn');
-      const spinner = document.getElementById('spinner');
-      const btnText = document.getElementById('btnText');
-
-      btn.disabled = true;
-      spinner.style.display = 'inline-block';
-      btnText.textContent = 'Analyzing...';
-
-      try {
-        await new Promise(resolve => setTimeout(resolve, 1600));
-
-        const mockResponses = [
-          { score: 82, label: "Likely False", confidence: 88, 
-            desc: "High emotional language and sensationalism detected. No credible sources support this claim." },
-          { score: 18, label: "Likely True", confidence: 91, 
-            desc: "Multiple credible sources confirm this information." },
-          { score: 55, label: "Uncertain", confidence: 64, 
-            desc: "Mixed signals detected. More context is needed." }
-        ];
-
-        const result = mockResponses[Math.floor(Math.random() * mockResponses.length)];
-        showResult(result);
+        const btn = document.getElementById('checkBtn');
+        const btnText = document.getElementById('btnText');
         
-      } catch (e) {
-        alert("Something went wrong. Please try again.");
-      } finally {
-        btn.disabled = false;
-        spinner.style.display = 'none';
-        btnText.textContent = 'Check Claim';
-      }
+        btn.disabled = true;
+        btnText.textContent = 'Analyzing...';
+
+        try {
+            // Corrected with backticks ` `
+            const response = await fetch(`${API_BASE_URL}/analyze`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ text: claim })
+            });
+
+            if (!response.ok) throw new Error("Server Error");
+
+            const data = await response.json();
+            showResult(data); // This shows the score and reason page
+
+        } catch (error) {
+            console.error("Connection failed:", error);
+            alert("Ensure FastAPI (uvicorn) and Ollama are running!");
+        } finally {
+            btn.disabled = false;
+            btnText.textContent = 'Check Claim';
+        }
     }
 
+    // Function to fill example chips
+    function fillExample(el) {
+        document.getElementById('claim-input').value = el.textContent;
+    }
+
+    // Function to update the UI
     function showResult(data) {
-      const card = document.getElementById('resultCard');
-      card.style.display = 'block';
-      card.scrollIntoView({ behavior: 'smooth' });
+        const card = document.getElementById('resultCard');
+        card.style.display = 'block'; // Make the results "stand"
+        card.scrollIntoView({ behavior: 'smooth' });
 
-      card.className = 'result-card';
-      if (data.label.includes("False")) card.classList.add('theme-false');
-      else if (data.label.includes("True")) card.classList.add('theme-true');
-      else card.classList.add('theme-uncertain');
-
-      const gaugeFill = document.getElementById('gaugeFill');
-      const offset = 300 - (data.score / 100) * 300;
-      gaugeFill.style.strokeDashoffset = offset;
-
-      document.getElementById('gaugeNumber').textContent = data.score;
-      document.getElementById('verdictLabel').textContent = data.label.toUpperCase();
-      document.getElementById('verdictTitle').textContent = 
-        data.label.includes("False") ? "This claim appears false" :
-        data.label.includes("True") ? "This claim appears credible" : "Verdict is uncertain";
-      
-      document.getElementById('verdictDesc').textContent = data.desc;
-      document.getElementById('confValue').textContent = data.confidence + "%";
-      document.getElementById('confBar').style.width = data.confidence + "%";
-
-      const reasonsHTML = `
-        <div class="reason-tag">⚠️ Emotional language detected</div>
-        <div class="reason-tag">📉 No credible sources</div>
-        <div class="reason-tag">🔥 Sensationalist headline</div>
-      `;
-      document.getElementById('reasonTags').innerHTML = reasonsHTML;
+        document.getElementById('gaugeNumber').textContent = Math.round(data.score);
+        document.getElementById('verdictDesc').textContent = data.ai_analysis;
     }
-
-    function shareResult() {
-      alert("Link copied to clipboard! (Demo)");
-    }
-
-    function checkAnother() {
-      document.getElementById('resultCard').style.display = 'none';
-      document.getElementById('claim-input').focus();
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
-
-    document.getElementById('claim-input').addEventListener('keydown', (e) => {
-      if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') checkClaim();
-    });
-  </script>
+</script>
 </body>
 </html>
