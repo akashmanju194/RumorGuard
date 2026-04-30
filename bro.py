@@ -38,6 +38,8 @@ def query_model(payload):
     # If the model is loading, HuggingFace returns an 'estimated_time'
     return response.json()
 
+
+
 # --- UI DESIGN (STREETWEAR/UTILITY THEME) ---
 st.set_page_config(page_title="RumourGuard", page_icon="🛡️", layout="centered")
 
@@ -48,7 +50,8 @@ st.markdown("""
     .stButton>button { width: 100%; border-radius: 5px; height: 3em; background-color: #ff4b4b; color: white; }
     .stTextInput>div>div>input { background-color: #262730; color: white; border: 1px solid #464646; }
     </style>
-    """, unsafe_allow_stdio=True)
+    """, unsafe_allow_html=True) # Changed from unsafe_allow_stdio to unsafe_allow_html
+
 
 st.title("🛡️ RUMOURGUARD")
 st.caption("Advanced AI Misinformation Detection | v2.0 (Cloud Optimized)")
