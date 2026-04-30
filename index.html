@@ -1092,9 +1092,11 @@
       <li><a href="#" onclick="scrollToSection('about-us')">About Us</a></li>
     </ul>
 
-    <div>
-      <button id="themeToggle"
-        style="background:none; border:none; cursor:pointer; font-size:1.4rem; padding:8px;">🌓</button>
+    <div style="display: flex; align-items: center; gap: 1rem;">
+      <div id="authNavSection" style="font-family: 'Space Mono', monospace; font-size: 0.85rem;">
+        <button onclick="openAuthModal()" style="background:var(--accent); color:var(--bg); border:2px solid var(--border); padding:6px 12px; cursor:pointer; font-weight:bold;">SIGN IN</button>
+      </div>
+      <button id="themeToggle" style="background:none; border:none; cursor:pointer; font-size:1.4rem; padding:8px;">🌓</button>
     </div>
   </nav>
 
@@ -1259,6 +1261,8 @@
           <div class="footer-stat-number" id="statsAvg" style="color:var(--accent);">0</div>
         </div>
       </div>
+      <button onclick="clearHistory()" style="background:var(--red); color:white; border:2px solid var(--border); padding:6px 12px; font-family:'Space Mono', monospace; cursor:pointer; font-weight:bold; font-size:0.8rem;">[CLEAR]</button>
+      </div>
     </div>
   </div>
 
@@ -1284,31 +1288,59 @@
           </div>
         </div>
 
-        <div style="display: flex; gap: 1rem; margin-top: 3rem;">
-          <div style="flex: 1; padding: 1rem; border: 2px solid var(--border); text-align: center;">
-            <div style="font-family: 'Space Mono', monospace; font-size: 2rem; font-weight: bold;">1M+</div>
-            <div style="font-size: 0.8rem; font-family: 'Space Mono', monospace; color: var(--text-muted);">SCANNED</div>
-          </div>
-          <div style="flex: 1; padding: 1rem; border: 2px solid var(--border); text-align: center; background: var(--accent); color: var(--bg);">
-            <div style="font-family: 'Space Mono', monospace; font-size: 2rem; font-weight: bold;">95%</div>
-            <div style="font-size: 0.8rem; font-family: 'Space Mono', monospace; color: var(--bg);">ACCURACY</div>
-          </div>
-          <div style="flex: 1; padding: 1rem; border: 2px solid var(--border); text-align: center;">
-            <div style="font-family: 'Space Mono', monospace; font-size: 2rem; font-weight: bold;">&lt;1s</div>
-            <div style="font-size: 0.8rem; font-family: 'Space Mono', monospace; color: var(--text-muted);">LATENCY</div>
-          </div>
         </div>
       </div>
     </div>
   </section>
+
+  <!-- ==================== AUTH MODAL ==================== -->
+  <div id="authModal" class="how-it-works-modal" style="display: none; border: 2px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow); background: var(--surface); max-width: 400px; z-index: 2000;">
+    <div class="modal-header-enhanced" style="background: var(--bg); color: var(--text); border-bottom: 2px solid var(--border); padding: 1.5rem; display: flex; justify-content: space-between; align-items: center;">
+      <h2 style="font-family: 'Space Mono', monospace;" id="authModalTitle">// SIGN_IN</h2>
+      <button class="modal-close" style="background:none; border:2px solid var(--border); color:var(--text); cursor:pointer; font-size:1.2rem; padding:4px 12px; font-family:'Space Mono', monospace;" onclick="closeAuthModal()">[X]</button>
+    </div>
+    <div class="modal-body-enhanced" style="padding: 2rem; background: var(--surface);">
+      <div id="authError" style="color: var(--red); font-family: 'Space Mono', monospace; font-size: 0.85rem; margin-bottom: 1rem; display: none;"></div>
+      <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+        <div>
+          <label style="font-family: 'Space Mono', monospace; font-size: 0.85rem; font-weight: bold; display: block; margin-bottom: 0.5rem;">USERNAME</label>
+          <input type="text" id="authUsername" style="width: 100%; padding: 12px; border: 2px solid var(--border); background: var(--bg); color: var(--text); font-family: 'Space Grotesk', sans-serif;" />
+        </div>
+        <div>
+          <label style="font-family: 'Space Mono', monospace; font-size: 0.85rem; font-weight: bold; display: block; margin-bottom: 0.5rem;">PASSWORD</label>
+          <input type="password" id="authPassword" style="width: 100%; padding: 12px; border: 2px solid var(--border); background: var(--bg); color: var(--text); font-family: 'Space Grotesk', sans-serif;" />
+        </div>
+        <button id="authSubmitBtn" onclick="submitAuth()" style="background: var(--text); color: var(--bg); border: 2px solid var(--border); padding: 12px; font-family: 'Space Mono', monospace; font-weight: bold; cursor: pointer; text-transform: uppercase;">LOGIN</button>
+        <div style="text-align: center; font-family: 'Space Grotesk', sans-serif; font-size: 0.9rem;">
+          <a href="#" id="authToggleLink" onclick="toggleAuthMode()" style="color: var(--text-muted); text-decoration: none; border-bottom: 1px dashed var(--text-muted);">Need an account? Register</a>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <!-- Modal Overlay -->
   <div id="modalOverlay" class="modal-overlay" style="display: none;" onclick="closeAllModals()"></div>
 
   <script>
     // ==================== CONFIGURATION ====================
-    const API_BASE = "http://127.0.0.1:8000";
-    const CURRENT_USER = "GuestUser";
+    // Dynamically resolve the backend origin so the app works on any
+    // machine or IP without hardcoding 127.0.0.1.
+    const API_BASE = window.location.origin;
+    let CURRENT_USER = localStorage.getItem("username") || "GuestUser";
+    let isRegisterMode = false;
+    let _lastResultId = null;   // tracks the DB id of the last analysed claim
+    
+    function updateAuthUI() {
+      const navSection = document.getElementById("authNavSection");
+      if (CURRENT_USER !== "GuestUser") {
+        navSection.innerHTML = `<span style="margin-right:1rem;">[${CURRENT_USER}]</span><button onclick="logout()" style="background:transparent; color:var(--text); border:2px dashed var(--border); padding:4px 8px; cursor:pointer;">LOGOUT</button>`;
+      } else {
+        navSection.innerHTML = `<button onclick="openAuthModal()" style="background:var(--accent); color:var(--bg); border:2px solid var(--border); padding:6px 12px; cursor:pointer; font-weight:bold;">SIGN IN</button>`;
+      }
+    }
+    
+    window.onload = updateAuthUI;
+
 
     // ==================== THEME TOGGLE ====================
     const toggle = document.getElementById('themeToggle');
@@ -1371,13 +1403,14 @@
       modal.style.display = 'block';
       overlay.style.display = 'block';
 
+      if (CURRENT_USER === "GuestUser") {
+        listContainer.innerHTML = `<tr><td colspan='4' style='text-align:center; padding: 2rem; font-family:"Space Mono", monospace;'>[SYS_MSG] PLEASE SIGN IN TO VIEW HISTORY.</td></tr>`;
+        document.getElementById('recentChecksFooter').style.display = 'none';
+        return;
+      }
+      
       // Show loading state
-      listContainer.innerHTML = `
-        <div style="text-align: center; padding: 2rem;">
-          <div class="loading-spinner"></div>
-          <p style="margin-top: 1rem; color: var(--text-muted);">Loading your recent checks...</p>
-        </div>
-      `;
+      listContainer.innerHTML = `<tr><td colspan='4' style='text-align:center; padding: 2rem; font-family:"Space Mono", monospace;'>LOADING DATA...</td></tr>`;
 
       try {
         // Fetch history and stats in parallel
@@ -1404,7 +1437,11 @@
             const createdDate = new Date(check.created_at).toLocaleTimeString();
             
             return `
-              <tr style="border-bottom: 1px solid var(--border); transition: background 0.2s;">
+              <tr
+                style="border-bottom: 1px solid var(--border); transition: background 0.2s; cursor: pointer;"
+                title="Click to view full result"
+                onclick="loadSharedResult(${check.id})"
+              >
                 <td style="padding: 12px; font-family: 'Space Mono', monospace; font-size: 0.85rem; color: var(--text-muted);">${createdDate}</td>
                 <td style="padding: 12px; font-weight: 500;">"${checkText}"</td>
                 <td style="padding: 12px; text-align: center; font-family: 'Space Mono', monospace; font-weight: bold;">${Math.round(check.score)}</td>
@@ -1414,6 +1451,7 @@
               </tr>
             `;
           }).join('');
+
 
           listContainer.innerHTML = `${checksHTML}`;
         }
@@ -1469,7 +1507,7 @@
         const response = await fetch(`${API_BASE}/analyze`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ text: claim, url: "" })
+          body: JSON.stringify({ text: claim, url: "", username: CURRENT_USER })
         });
 
         if (!response.ok) {
@@ -1559,8 +1597,43 @@
       document.getElementById('reasonTags').innerHTML = reasonsHTML;
     }
 
+    // Track last result ID when saving to history
+    // (The /analyze endpoint returns no id, so we grab it from the history response.)
+
+    async function loadSharedResult(itemId) {
+      closeRecentChecks();
+      try {
+        const res = await fetch(`${API_BASE}/api/share/${itemId}`);
+        if (!res.ok) throw new Error("Not found");
+        const item = await res.json();
+
+        // Re-construct display object from stored HistoryItem
+        const result = {
+          score: Math.round(item.score),
+          label: item.label,
+          confidence: item.confidence || 50,
+          desc: `Loaded from history — originally checked at ${new Date(item.created_at).toLocaleString()}.`,
+        };
+        showResult(result);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      } catch (e) {
+        console.error("loadSharedResult failed:", e);
+        alert("Could not load the selected result. The backend may be unreachable.");
+      }
+    }
+
     function shareResult() {
-      alert("Share functionality coming soon!");
+      const score = document.getElementById('gaugeNumber').textContent;
+      const verdict = document.getElementById('verdictLabel').textContent;
+      const shareText = `RumorGuard Analysis — Verdict: ${verdict} | Score: ${score}/100 | ${window.location.href}`;
+      if (navigator.clipboard) {
+        navigator.clipboard.writeText(shareText).then(() =>
+          alert("\u2705 Result link copied to clipboard!")
+        ).catch(() => alert(shareText));
+      } else {
+        // Fallback for http contexts
+        alert("Share this result:\n\n" + shareText);
+      }
     }
 
     function checkAnother() {
@@ -1574,6 +1647,83 @@
     document.getElementById('claim-input').addEventListener('keydown', (e) => {
       if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') checkClaim();
     });
+
+    
+    // ==================== AUTHENTICATION ====================
+    function openAuthModal() {
+      document.getElementById('authModal').style.display = 'block';
+      document.getElementById('modalOverlay').style.display = 'block';
+      document.getElementById('authError').style.display = 'none';
+      document.getElementById('authUsername').value = '';
+      document.getElementById('authPassword').value = '';
+    }
+
+    function closeAuthModal() {
+      document.getElementById('authModal').style.display = 'none';
+      document.getElementById('modalOverlay').style.display = 'none';
+    }
+
+    function toggleAuthMode() {
+      isRegisterMode = !isRegisterMode;
+      document.getElementById('authModalTitle').textContent = isRegisterMode ? '// REGISTER' : '// SIGN_IN';
+      document.getElementById('authSubmitBtn').textContent = isRegisterMode ? 'REGISTER' : 'LOGIN';
+      document.getElementById('authToggleLink').textContent = isRegisterMode ? 'Already have an account? Login' : 'Need an account? Register';
+      document.getElementById('authError').style.display = 'none';
+    }
+
+    async function submitAuth() {
+      const u = document.getElementById('authUsername').value.trim();
+      const p = document.getElementById('authPassword').value;
+      const err = document.getElementById('authError');
+      
+      if (!u || !p) {
+        err.textContent = "Please fill all fields.";
+        err.style.display = 'block';
+        return;
+      }
+      
+      const endpoint = isRegisterMode ? "/register" : "/login";
+      try {
+        const res = await fetch(API_BASE + endpoint, {
+          method: "POST",
+          headers: {"Content-Type": "application/json"},
+          body: JSON.stringify({username: u, password: p})
+        });
+        
+        const data = await res.json();
+        if (!res.ok) {
+          err.textContent = data.error || data.detail || "Authentication failed.";
+          err.style.display = 'block';
+          return;
+        }
+        
+        CURRENT_USER = isRegisterMode ? data.username : data.username;
+        localStorage.setItem("username", CURRENT_USER);
+        updateAuthUI();
+        closeAuthModal();
+      } catch (e) {
+        err.textContent = "Network error.";
+        err.style.display = 'block';
+      }
+    }
+
+    function logout() {
+      CURRENT_USER = "GuestUser";
+      localStorage.removeItem("username");
+      updateAuthUI();
+    }
+
+    async function clearHistory() {
+      if (!confirm("Are you sure you want to clear your history?")) return;
+      try {
+        const res = await fetch(`${API_BASE}/history/${CURRENT_USER}`, { method: "DELETE" });
+        if (res.ok) {
+          openRecentChecks(); // Reload
+        }
+      } catch (e) {
+        console.error("Failed to clear history", e);
+      }
+    }
 
     // Close modals on Escape
     document.addEventListener('keydown', (e) => {

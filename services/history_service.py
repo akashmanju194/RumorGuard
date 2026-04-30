@@ -42,7 +42,7 @@ class HistoryService:
         ).count()
 
         history_items = [
-            schemas.HistoryItem.from_orm(item) for item in items
+            schemas.HistoryItem.model_validate(item) for item in items
         ]
 
         return schemas.HistoryListResponse(
@@ -72,7 +72,7 @@ class HistoryService:
         total = count_result.scalar()
 
         history_items = [
-            schemas.HistoryItem.from_orm(item) for item in items
+            schemas.HistoryItem.model_validate(item) for item in items
         ]
 
         return schemas.HistoryListResponse(
@@ -168,4 +168,15 @@ class HistoryService:
 
         db.delete(item)
         db.commit()
+        return True
+
+    @staticmethod
+    async def clear_user_history_async(db: AsyncSession, username: str) -> bool:
+        """
+        Delete all history items for a specific user asynchronously.
+        """
+        from sqlalchemy import delete
+        stmt = delete(models.History).where(models.History.username == username)
+        await db.execute(stmt)
+        await db.commit()
         return True

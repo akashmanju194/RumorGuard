@@ -33,6 +33,7 @@ class LoginResponse(BaseModel):
 class AnalyzeInput(BaseModel):
     text: str = Field(..., min_length=1, max_length=5000, description="Text to analyze")
     url: Optional[str] = Field(None, description="Source URL (optional)")
+    username: Optional[str] = Field("GuestUser", description="Username checking the claim")
 
     @validator("text")
     def text_not_empty(cls, v):

@@ -29,10 +29,13 @@ app = FastAPI(
 )
 
 # ── 3. MIDDLEWARE ─────────────────────────────────────────────────────────────
+# NOTE: allow_origins=["*"] with allow_credentials=True is rejected by the
+# Fetch spec.  Since we use JSON body auth (not cookies), credentials=False
+# is correct and unblocks all cross-origin requests.
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
-    allow_credentials=True,
+    allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -170,20 +173,21 @@ def analyze(
     # Run analysis using service
     result = analysis_service.analyze(text)
 
-    # Save to history as GuestUser
-    try:
-        history_data = schemas.SaveInput(
-            username="GuestUser",
-            text=text[:500],
-            score=float(result["score"]),
-            label=result["verdict"],
-            source_url=data.url or None,
-            confidence=result["confidence"],
-        )
-        history_service.save_analysis(db, history_data)
-    except Exception as e:
-        # Log error but don't fail the response
-        print(f"History save error: {e}")
+    # Save to history only if user is logged in
+    if data.username and data.username != "GuestUser":
+        try:
+            history_data = schemas.SaveInput(
+                username=data.username,
+                text=text[:500],
+                score=float(result["score"]),
+                label=result["verdict"],
+                source_url=data.url or None,
+                confidence=result["confidence"],
+            )
+            history_service.save_analysis(db, history_data)
+        except Exception as e:
+            # Log error but don't fail the response
+            print(f"History save error: {e}")
 
     # Build analysis string
     ai_analysis_str = (
@@ -299,14 +303,56 @@ def delete_history_item(
             detail="History item not found or unauthorized.",
         )
 
-# ── 15. ERROR HANDLERS ────────────────────────────────────────────────────────
+# ── 15. CLEAR ALL USER HISTORY ────────────────────────────────────────────────
+@app.delete(
+    "/history/{username}",
+    response_model=dict,
+    summary="Clear all user history",
+)
+async def clear_all_history(
+    username: str,
+    db: AsyncSession = Depends(get_async_db),
+):
+    """
+    Delete all past analysis results for a specific user asynchronously.
+    """
+    await history_service.clear_user_history_async(db, username)
+    return {"message": "All history cleared successfully."}
+
+# ── 15. SHARE ENDPOINT ────────────────────────────────────────────────────────
+@app.get(
+    "/api/share/{item_id}",
+    response_model=schemas.HistoryItem,
+    summary="Get a single analysis result by ID",
+)
+def get_share(
+    item_id: int,
+    db: Session = Depends(get_db),
+):
+    """
+    Retrieve a single analysis history record by its ID.
+    Used by the frontend to re-display a past result when a 'Recent Checks'
+    row is clicked.
+    """
+    record = db.query(models.History).filter(models.History.id == item_id).first()
+    if not record:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Analysis record not found.",
+        )
+    return schemas.HistoryItem.model_validate(record)
+
+
+# ── 16. ERROR HANDLERS ────────────────────────────────────────────────────────
+from fastapi.responses import JSONResponse
+
 @app.exception_handler(HTTPException)
 async def http_exception_handler(request, exc):
     """Custom HTTP exception handler"""
-    return {
-        "error": exc.detail,
-        "status_code": exc.status_code,
-    }
+    return JSONResponse(
+        status_code=exc.status_code,
+        content={"error": exc.detail, "status_code": exc.status_code},
+    )
 
 if __name__ == "__main__":
     import uvicorn

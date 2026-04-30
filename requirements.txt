@@ -5,3 +5,5 @@ pydantic
 passlib[bcrypt]
 vaderSentiment
 aiosqlite
+transformers
+torch
